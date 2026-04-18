@@ -149,3 +149,31 @@ def convert_json_to_csv():
     df.columns = df.columns.str.strip()
     df.fillna('N/A', inplace=True)  # Replace NaN with empty strings
     df.to_csv('motorsDetails.csv', index=False, encoding='utf-8')
+
+def CleanData():
+    """
+    Load the CSV file, clean the data by removing unwanted characters,
+    and save the cleaned data back to CSV.
+    """
+    df = pd.read_csv('motorsDetails.csv', encoding='utf-8')
+    # Define common suffixes to remove and rename columns accordingly
+    suffixes = [
+        ' Nm', ' mm', ' %', ' : 1', ' N', ' rpm', ' g',
+        ' gcm²', ' W', ' mm/s', ' °C', ' °', ' V', ' A',
+        ' mA', ' mNm', ' Ω', ' mH', ' mNm/A', ' rpm/V',
+        ' rpm/mNm', ' ms', ' K/W', ' s'
+                ]
+    # Remove unwanted characters from all string columns
+    for column in df.select_dtypes(include=['object']).columns:
+        df[column] = df[column].str.removesuffix(' ')
+        for suffix in suffixes:
+            if df[column].str.endswith(suffix).any():
+                df[column] = df[column].str.removesuffix(suffix)
+                df.rename(columns={column: f'{column} ({suffix.replace(" ", "")})'}, inplace=True) # Rename column to include suffix in parentheses without spaces
+                column = f'{column} ({suffix.replace(" ", "")})'  # Update column name for next iterations
+
+        df[column] = df[column].str.removeprefix('max. ')
+    df.to_csv('motorsDetailsCleaned.csv', index=False, encoding='utf-8')
+
+
+CleanData()
