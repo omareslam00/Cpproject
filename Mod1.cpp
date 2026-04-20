@@ -85,20 +85,32 @@ public:
 
 };
 
-void test()
+
+// demonstrate the usage of Material class and CSV handling
+void doc()
 {
-    // vector<Material> materials= Material().materialList();
+    // vector<Material> materials= Material().materialList();  // Get the list of materials from the CSV file
+
+    //how to get each material's properties
+
     // for (Material material : materials) {
     //     cout << "Index: " << material.index << ", Name: " << material.name 
     //          << ", Yield: " << material.yield << ", Density: " << material.density << endl;
     // }
+
+    // add a new material to the CSV file and the materials vector
+
     //Material().addMaterial(Material("dgdg", "454.0", "55.0"));
+
+
+    // ger the value of specific material property
+
     //cout<<Material().materialList()[0].name<<endl;
 }
 
 int main()
 {
-    Material().addMaterial(Material("dgdg", "454.0", "55.0"));
+    doc();
     return 0;
 
 }
