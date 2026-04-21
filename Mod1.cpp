@@ -74,7 +74,7 @@ public:
     };
 
     // add Material to the CSV file/Vector
-    void addMaterial()
+    Material addMaterial()
     {
         string n, y, d;
         cout << "Enter material name | yield | density: ";
@@ -85,6 +85,7 @@ public:
                 cin >> n >> y >> d;
                 stof(y);
                 stof(d);
+                cout << "Material added successfully!" << endl;
                 break; // Exit loop if conversion is successful
             }
             catch(exception e)
@@ -98,6 +99,8 @@ public:
         string dataLine = to_string(materialList().size()) + "," + n + "," + y + "," + d;
         handler.writeCSV(dataLine);
         materials.push_back(Material(n, y, d));
+        cout << materials.back().name << " added to the materials list." << endl;
+        return materials.back();
     }
 
     // display materials and get user selection
@@ -121,6 +124,8 @@ public:
                 if (index < 0 || index >= materials.size()) {
                     throw out_of_range("Index out of range");  // Check if index is within valid range
                 }
+                cout << "Material selected successfully!" << endl;
+                cout << "Selected Material: " << materials[index].name << endl;
                 return materials[index];
             }
             catch(exception e)  //catch any error (invalid input or out of range)
@@ -131,9 +136,24 @@ public:
         }
 
     }
+    Material controlMaterial()
+    {
+        int index;
+        cout<<"1-Add new material \n2-Select material from the list \nEnter your choice: ";
+        cin>>index;
+        switch (index)
+        {
+        case 1:
+            return addMaterial();
+        case 2:
+            return getMaterial();
+        default:
+            cout<<"Enter a valid number";
+            controlMaterial();
+        }
+    }
 
 };
-
 
 // demonstrate the usage of Material class and CSV handling
 void doc()
@@ -161,10 +181,12 @@ void doc()
     // Material material = Material().getMaterial();
     // cout << "Selected Material: " << material.name << ", Yield: " << material.yield << ", Density: " << material.density << endl;
 
+    //// get user select/add material and display its properties
+    //Material material = Material().controlMaterial();
+
 }
 
 int main()
-{ 
-    Material().addMaterial();
+{
     return 0;
 }
