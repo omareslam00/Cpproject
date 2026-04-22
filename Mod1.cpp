@@ -25,7 +25,7 @@ public:
         cout << "File opened successfully!" << endl;
         return file;
     }
-    void writeCSV(string dataLine="") {
+    void writeCSV(string dataLine) {
         fstream file(fileName,ios::app);
         if (!file.is_open()) {
             cout << "Could not open the file!" << endl;
@@ -47,7 +47,7 @@ public:
     vector<Material> materials;
 
     
-    Material(string n = "", string y = "0.0", string d = "0.0") {
+    Material(string n="", string y="0.0", string d="0.0") {
         name = n;
         yield = stof(y);
         density = stof(d);
@@ -162,10 +162,9 @@ void doc()
 
     ////how to get each material's properties
 
-    // for (Material material : materials) {
-    //     cout << "Index: " << material.index << ", Name: " << material.name 
-    //          << ", Yield: " << material.yield << ", Density: " << material.density << endl;
-    // }
+    // for(int i=0;i<materials.size();i++){
+    //         cout << i << " | " << materials[i].name << " | " << materials[i].yield <<" | "<< materials[i].density << endl;
+    //     }
 
     //// add a new material to the CSV file and the materials vector
 
@@ -188,5 +187,6 @@ void doc()
 
 int main()
 {
+    Material material = Material().controlMaterial();
     return 0;
 }
