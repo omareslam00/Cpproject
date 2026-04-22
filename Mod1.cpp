@@ -148,8 +148,8 @@ public:
         case 2:
             return getMaterial();
         default:
-            cout<<"Enter a valid number";
-            controlMaterial();
+            cout<<"Enter a valid number \n";
+            return controlMaterial();
         }
     }
 
@@ -190,3 +190,4 @@ int main()
     Material material = Material().controlMaterial();
     return 0;
 }
+
