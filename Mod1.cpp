@@ -188,5 +188,6 @@ void doc()
 
 int main()
 {
+    Material material = Material().controlMaterial();
     return 0;
 }
