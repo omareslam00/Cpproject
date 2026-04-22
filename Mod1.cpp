@@ -1,16 +1,17 @@
+#define _USE_MATH_DEFINES
 #include <iostream>
+#include <cmath>
 #include <fstream>
 #include <vector>
 #include <string>
 #include <sstream>
-
 using namespace std;
 
 
 // Class to handle CSV files operations
 class csvHandler 
 {
-public:      
+public:
     string fileName;
     csvHandler(string filename)
     {
@@ -155,6 +156,98 @@ public:
 
 };
 
+class StressAnalysis
+{
+public:
+const float g = 9.81; // Acceleration due to gravity
+
+int crossSectionType; // 1-circular or 2-rectangular
+float linkLength,payloadMass,angAcc,r,b,h;
+Material material = Material().controlMaterial(); // Get material properties from user selection/addition
+float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
+float calculateCirclar()
+{
+    float linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
+    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
+    float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section
+    float stress = (bendingMoment * r / I)/pow(10,6); // Maximum stress formula converted to MPa
+    cout << "Calculated Bending Stress for Circular Cross Section: " << stress << " MPa" << endl;
+    if(stress > material.yield)
+    {
+        cout << "The link will fail under the given conditions." << endl;
+    }
+    else
+    {
+        cout << "The link is safe under the given conditions." << endl;
+    }
+    return stress;
+}
+
+float calculateRectangular()
+{
+    float linkMass = density * b * h * linkLength; // Mass of the link
+    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
+    float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section
+    float stress = (bendingMoment * h / (2 * I))/pow(10,6); // Maximum stress formula converted to MPa
+    cout << "Calculated Bending Stress for rectangular Cross Section: " << stress << " MPa" << endl;
+    if(stress > material.yield)
+    {
+        cout << "The link will fail under the given conditions." << endl;
+    }
+    else
+    {
+        cout << "The link is safe under the given conditions." << endl;
+    }
+    return stress;
+}
+
+float inputs(){
+    cout<<"Enter cross section type (1-circular 2-rectangular): ";
+    cin>> crossSectionType;
+    switch (crossSectionType)
+    {    case 1:
+        {
+            cout<<"Enter radius: ";
+            cin>>r;
+
+            cout<<"enter link length: ";
+            cin>>linkLength;
+
+            cout<<"enter payload mass: ";
+            cin>>payloadMass;
+
+            cout<<"enter angular acceleration: ";
+            cin>>angAcc;
+
+            return calculateCirclar();
+        }
+
+        case 2 :
+        {
+            cout<<"Enter width: ";
+            cin>>b;
+
+            cout<<"Enter height: ";
+            cin>>h;
+
+            cout<<"enter link length: ";
+            cin>>linkLength;
+
+            cout<<"enter payload mass: ";
+            cin>>payloadMass;
+
+            cout<<"enter angular acceleration: ";
+            cin>>angAcc;
+
+            return calculateRectangular();
+        }
+
+        default :
+        cout<<"Enter Valid type"<<endl;
+        return inputs();
+}
+}};
+
 // demonstrate the usage of Material class and CSV handling
 void doc()
 {
@@ -187,7 +280,7 @@ void doc()
 
 int main()
 {
-    Material material = Material().controlMaterial();
+    StressAnalysis analysis;
+    analysis.inputs();
     return 0;
 }
-
