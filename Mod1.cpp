@@ -139,10 +139,19 @@ public:
     }
     Material controlMaterial()
     {
-        int index;
+        string index;
         cout<<"1-Add new material \n2-Select material from the list \nEnter your choice: ";
-        cin>>index;
-        switch (index)
+        try
+        {
+            cin>>index;
+            stoi(index); // Validate if input is an integer
+        }
+        catch(exception e)
+        {
+            cout << "Invalid input. \nPlease enter a valid number: " ;
+            return controlMaterial();
+        }
+        switch (stoi(index))
         {
         case 1:
             return addMaterial();
@@ -161,7 +170,7 @@ class StressAnalysis
 public:
 const float g = 9.81; // Acceleration due to gravity
 
-int crossSectionType; // 1-circular or 2-rectangular
+string crossSectionType; // 1-circular or 2-rectangular
 float linkLength,payloadMass,angAcc,r,b,h;
 Material material = Material().controlMaterial(); // Get material properties from user selection/addition
 float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
@@ -203,8 +212,17 @@ float calculateRectangular()
 
 float controlStress(){
     cout<<"Enter cross section type (1-circular 2-rectangular): ";
-    cin>> crossSectionType;
-    switch (crossSectionType)
+    try
+    {
+        cin>> crossSectionType;
+        stoi(crossSectionType); // Validate if input is an integer
+    }
+    catch(exception e)
+    {
+        cout << "Invalid input. \nPlease enter a valid number: " ;
+        return controlStress();
+    }
+    switch (stoi(crossSectionType))
     {    
         case 1:
         {
