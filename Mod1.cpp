@@ -201,11 +201,12 @@ float calculateRectangular()
     return stress;
 }
 
-float inputs(){
+float controlStress(){
     cout<<"Enter cross section type (1-circular 2-rectangular): ";
     cin>> crossSectionType;
     switch (crossSectionType)
-    {    case 1:
+    {    
+        case 1:
         {
             cout<<"Enter radius: ";
             cin>>r;
@@ -244,7 +245,7 @@ float inputs(){
 
         default :
         cout<<"Enter Valid type"<<endl;
-        return inputs();
+        return controlStress();
 }
 }};
 
@@ -276,11 +277,13 @@ void doc()
     //// get user select/add material and display its properties
     //Material material = Material().controlMaterial();
 
+    //// get stress and find if it is safe or not
+    // float stress = StressAnalysis().controlStress();
+
 }
 
 int main()
 {
-    StressAnalysis analysis;
-    analysis.inputs();
+    float stress = StressAnalysis().controlStress();
     return 0;
 }
