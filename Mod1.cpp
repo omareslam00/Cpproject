@@ -8,6 +8,57 @@
 using namespace std;
 
 
+
+
+string dimPrecision(float value, string unit)
+{
+    if (unit == "m")
+    {
+        if(value>=0.01)
+        {
+            return to_string(value*pow(10,2))+" cm"; // convert to centimeters
+        }
+        else if (value>=0.0001)
+        {
+            return to_string(value*pow(10,3))+" mm"; // convert to millimeters
+        }
+        else
+        {
+            return to_string(value)+" m"; // dimension doesn't need conversion
+        }
+    }
+    if (unit == "Pa")
+    {
+        if(value>=100000)
+        {
+            return to_string(value*pow(10,-6))+" MPa"; // convert to MPa
+        }
+        else if (value>=1000)
+        {
+            return to_string(value*pow(10,-3))+" kPa"; // convert to kPa
+        }
+        else
+        {
+            return to_string(value)+" Pa"; // dimension doesn't need conversion
+        }
+    }
+    if (unit == "kg")
+    {
+        if(value>=1000)
+        {
+            return to_string(value*pow(10,-3))+" tons"; // convert to tons
+        }
+        else if(value<=0.0001)
+        {
+            return to_string(value*pow(10,3))+" g"; // convert to grams
+        }
+        else
+        {
+            return to_string(value)+" kg"; // dimension doesn't need conversion
+        }
+    }
+}
+
 // Class to handle CSV files operations
 class csvHandler 
 {
@@ -43,8 +94,8 @@ class Material
 {
 public:
     string name;
-    float yield;
-    float density;
+    float yield;  //units in MPa
+    float density; // units in g/cm^3
     vector<Material> materials;
 
     
@@ -78,7 +129,7 @@ public:
     Material addMaterial()
     {
         string n, y, d;
-        cout << "Enter material name | yield | density: ";
+        cout << "Enter material name | yield(MPa) | density(g/cm^3): ";
         while (true)
         {
             try
@@ -108,7 +159,7 @@ public:
     Material getMaterial() {
         materials = materialList(); // Load materials from CSV file
         cout << "Available Materials:" << endl;
-        cout << "Index | Name | Yield | Density" << endl;
+        cout << "Index | Name | Yield(MPa) | Density(g/cm^3)" << endl;
         for(int i=0;i<materials.size();i++){
             cout << i << " | " << materials[i].name << " | " << materials[i].yield <<" | "<< materials[i].density << endl;
         }
@@ -168,33 +219,33 @@ public:
 class StressAnalysis
 {
 public:
-const float g = 9.81; // Acceleration due to gravity
+const float g = 9.81; // Acceleration due to gravity (m/s^2)
 string crossSectionType; // 1-circular or 2-rectangular
-float linkLength; // Length of the link
-float payloadMass; // Mass of the payload
-float angAcc; // Angular acceleration
-float r; // radius for circular cross section
-float b, h; // width and height for rectangular cross section
-float linkMass; // Mass of the link
+float linkLength; // Length of the link (m)
+float payloadMass; // Mass of the payload (kg)
+float angAcc; // Angular acceleration (rad/s^2)
+float r; // radius for circular cross section (m)
+float b, h; // width and height for rectangular cross section (m)
+float linkMass; // Mass of the link (kg)
 
 Material material = Material().controlMaterial(); // Get material properties from user selection/addition
 float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
 
 float calculateCircular()
 {
-    linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
-    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
-    float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section
-    float stress = (bendingMoment * r / I); // Maximum stress formula converted to MPa
+    linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link (kg)
+    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link (N.m)
+    float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section (m^4)
+    float stress = (bendingMoment * r / I); // Maximum stress formula
     return stress;
 }
 
 float calculateRectangular()
 {
-    linkMass = density * b * h * linkLength; // Mass of the link
-    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
-    float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section
-    float stress = (bendingMoment * h / (2 * I)); // Maximum stress formula converted to MPa
+    linkMass = density * b * h * linkLength; // Mass of the link (kg)
+    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link (N.m)
+    float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section (m^4)
+    float stress = (bendingMoment * h / (2 * I)); // Maximum stress formula
     return stress;
 }
 
@@ -216,16 +267,16 @@ float controlStress()
     {    
         case 1:
         {
-            cout<<"Enter radius: ";
+            cout<<"Enter radius(m): ";
             cin>>r;
 
-            cout<<"enter link length: ";
+            cout<<"enter link length(m): ";
             cin>>linkLength;
 
-            cout<<"enter payload mass: ";
+            cout<<"enter payload mass(kg): ";
             cin>>payloadMass;
 
-            cout<<"enter angular acceleration: ";
+            cout<<"enter angular acceleration(rad/s^2): ";
             cin>>angAcc;
 
             return calculateCircular();
@@ -233,19 +284,19 @@ float controlStress()
 
         case 2 :
         {
-            cout<<"Enter width: ";
+            cout<<"Enter width(m): ";
             cin>>b;
 
-            cout<<"Enter height: ";
+            cout<<"Enter height(m): ";
             cin>>h;
 
-            cout<<"enter link length: ";
+            cout<<"enter link length(m): ";
             cin>>linkLength;
 
-            cout<<"enter payload mass: ";
+            cout<<"enter payload mass(kg): ";
             cin>>payloadMass;
 
-            cout<<"enter angular acceleration: ";
+            cout<<"enter angular acceleration(rad/s^2): ";
             cin>>angAcc;
 
             return calculateRectangular();
@@ -278,9 +329,9 @@ void optimizeDims(){
                 if(stress >= yield*0.99 && stress <= yield)
                 {
                     optimized = true;
-                    cout<<"Optimized radius: "<<r<<endl;
-                    cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
-                    cout<<"link mass: "<<linkMass<<" kg"<<endl;
+                    cout<<"Optimized radius: "<<dimPrecision(r,"m")<<endl;
+                    cout<<"Optimized stress: "<<dimPrecision(stress,"Pa")<<endl;
+                    cout<<"link mass: "<<dimPrecision(linkMass,"kg")<<endl;
                 }
             }
             break;
@@ -302,9 +353,9 @@ void optimizeDims(){
                 if(stress >= yield*0.99 && stress <= yield)
                 {
                     optimized = true;
-                    cout<<"Optimized dimensions: width = "<<b<<", height = "<<h<<endl;
-                    cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
-                    cout<<"Optimized link mass: "<<linkMass<<" kg"<<endl;
+                    cout<<"Optimized dimensions: width = "<<dimPrecision(b,"m")<<", height = "<<dimPrecision(h,"m")<<endl;
+                    cout<<"Optimized stress: "<<dimPrecision(stress,"Pa")<<endl;
+                    cout<<"Optimized link mass: "<<dimPrecision(linkMass,"kg")<<endl;
                 }
             }
             break;
