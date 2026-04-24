@@ -169,14 +169,20 @@ class StressAnalysis
 {
 public:
 const float g = 9.81; // Acceleration due to gravity
-
 string crossSectionType; // 1-circular or 2-rectangular
-float linkLength,payloadMass,angAcc,r,b,h;
+float linkLength; // Length of the link
+float payloadMass; // Mass of the payload
+float angAcc; // Angular acceleration
+float r; // radius for circular cross section
+float b, h; // width and height for rectangular cross section
+float linkMass; // Mass of the link
+
 Material material = Material().controlMaterial(); // Get material properties from user selection/addition
 float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
+
 float calculateCircular()
 {
-    float linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
+    linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
     float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
     float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section
     float stress = (bendingMoment * r / I); // Maximum stress formula converted to MPa
@@ -185,7 +191,7 @@ float calculateCircular()
 
 float calculateRectangular()
 {
-    float linkMass = density * b * h * linkLength; // Mass of the link
+    linkMass = density * b * h * linkLength; // Mass of the link
     float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
     float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section
     float stress = (bendingMoment * h / (2 * I)); // Maximum stress formula converted to MPa
@@ -263,12 +269,10 @@ void optimizeDims(){
                 if (stress > yield)
                 {
                     r*=1.01;
-                    cout<<"Stress is above yield. Increasing radius."<<endl;
                 }
                 else if (stress < yield)
                 {
                     r*=0.99;
-                    cout<<"Stress is below yield. Decreasing radius."<<endl;
                 }
                 stress = calculateCircular();
                 if(stress >= yield*0.99 && stress <= yield)
@@ -276,6 +280,7 @@ void optimizeDims(){
                     optimized = true;
                     cout<<"Optimized radius: "<<r<<endl;
                     cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
+                    cout<<"link mass: "<<linkMass<<" kg"<<endl;
                 }
             }
             break;
@@ -287,20 +292,19 @@ void optimizeDims(){
                 {
                     b*=1.01;
                     h*=1.01;
-                    cout<<"Stress is above yield. Increasing dimensions."<<endl;
                 }
                 else if(stress < yield)
                 {
                     b*=0.99;
                     h*=0.99;
-                    cout<<"Stress is below yield. Decreasing dimensions."<<endl;
                 }
                 stress = calculateRectangular();
                 if(stress >= yield*0.99 && stress <= yield)
                 {
                     optimized = true;
-                    cout<<"Optimized dimensions: b = "<<b<<", h = "<<h<<endl;
+                    cout<<"Optimized dimensions: width = "<<b<<", height = "<<h<<endl;
                     cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
+                    cout<<"Optimized link mass: "<<linkMass<<" kg"<<endl;
                 }
             }
             break;
