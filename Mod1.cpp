@@ -179,16 +179,7 @@ float calculateCirclar()
     float linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
     float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
     float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section
-    float stress = (bendingMoment * r / I)/pow(10,6); // Maximum stress formula converted to MPa
-    cout << "Calculated Bending Stress for Circular Cross Section: " << stress << " MPa" << endl;
-    if(stress > material.yield)
-    {
-        cout << "The link will fail under the given conditions." << endl;
-    }
-    else
-    {
-        cout << "The link is safe under the given conditions." << endl;
-    }
+    float stress = (bendingMoment * r / I); // Maximum stress formula converted to MPa
     return stress;
 }
 
@@ -197,20 +188,13 @@ float calculateRectangular()
     float linkMass = density * b * h * linkLength; // Mass of the link
     float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
     float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section
-    float stress = (bendingMoment * h / (2 * I))/pow(10,6); // Maximum stress formula converted to MPa
-    cout << "Calculated Bending Stress for rectangular Cross Section: " << stress << " MPa" << endl;
-    if(stress > material.yield)
-    {
-        cout << "The link will fail under the given conditions." << endl;
-    }
-    else
-    {
-        cout << "The link is safe under the given conditions." << endl;
-    }
+    float stress = (bendingMoment * h / (2 * I)); // Maximum stress formula converted to MPa
     return stress;
 }
 
-float controlStress(){
+
+float controlStress()
+{
     cout<<"Enter cross section type (1-circular 2-rectangular): ";
     try
     {
@@ -264,8 +248,66 @@ float controlStress(){
         default :
         cout<<"Enter Valid type"<<endl;
         return controlStress();
+    }
 }
-}};
+
+void optimizeDims(){
+    float stress = controlStress();
+    bool optimized = false;
+    float yield = material.yield*pow(10,6); // Convert yield from MPa to Pa for comparison with stress in Pa
+    switch (stoi(crossSectionType))
+        {    
+        case 1:
+            while(!optimized)
+            {
+                if (stress > yield)
+                {
+                    r*=1.01;
+                    cout<<"Stress is above yield. Increasing radius."<<endl;
+                }
+                else if (stress < yield)
+                {
+                    r*=0.99;
+                    cout<<"Stress is below yield. Decreasing radius."<<endl;
+                }
+                stress = calculateCirclar();
+                if(stress >= yield*0.99 && stress <= yield)
+                {
+                    optimized = true;
+                    cout<<"Optimized radius: "<<r<<endl;
+                    cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
+                }
+            }
+            break;
+        
+        case 2:
+            while(!optimized)
+            {
+                if(stress > yield)
+                {
+                    b*=1.01;
+                    h*=1.01;
+                    cout<<"Stress is above yield. Increasing dimensions."<<endl;
+                }
+                else if(stress < yield)
+                {
+                    b*=0.99;
+                    h*=0.99;
+                    cout<<"Stress is below yield. Decreasing dimensions."<<endl;
+                }
+                stress = calculateRectangular();
+                if(stress >= yield*0.99 && stress <= yield)
+                {
+                    optimized = true;
+                    cout<<"Optimized dimensions: b = "<<b<<", h = "<<h<<endl;
+                    cout<<"Optimized stress: "<<stress/pow(10,6)<<" MPa"<<endl;
+                }
+            }
+            break;
+
+        }
+    }
+};
 
 // demonstrate the usage of Material class and CSV handling
 void doc()
@@ -302,6 +344,7 @@ void doc()
 
 int main()
 {
-    float stress = StressAnalysis().controlStress();
+    
+    StressAnalysis().optimizeDims();
     return 0;
 }
