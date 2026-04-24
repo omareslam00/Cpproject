@@ -10,54 +10,7 @@ using namespace std;
 
 
 
-string dimPrecision(float value, string unit)
-{
-    if (unit == "m")
-    {
-        if(value>=0.01)
-        {
-            return to_string(value*pow(10,2))+" cm"; // convert to centimeters
-        }
-        else if (value>=0.0001)
-        {
-            return to_string(value*pow(10,3))+" mm"; // convert to millimeters
-        }
-        else
-        {
-            return to_string(value)+" m"; // dimension doesn't need conversion
-        }
-    }
-    if (unit == "Pa")
-    {
-        if(value>=100000)
-        {
-            return to_string(value*pow(10,-6))+" MPa"; // convert to MPa
-        }
-        else if (value>=1000)
-        {
-            return to_string(value*pow(10,-3))+" kPa"; // convert to kPa
-        }
-        else
-        {
-            return to_string(value)+" Pa"; // dimension doesn't need conversion
-        }
-    }
-    if (unit == "kg")
-    {
-        if(value>=1000)
-        {
-            return to_string(value*pow(10,-3))+" tons"; // convert to tons
-        }
-        else if(value<=0.0001)
-        {
-            return to_string(value*pow(10,3))+" g"; // convert to grams
-        }
-        else
-        {
-            return to_string(value)+" kg"; // dimension doesn't need conversion
-        }
-    }
-}
+string dimPrecision(float value, string unit); // Function to convert dimensions to appropriate units based on their magnitude for better readability
 
 // Class to handle CSV files operations
 class csvHandler 
@@ -364,9 +317,7 @@ void optimizeDims(){
     }
 };
 
-// demonstrate the usage of Material class and CSV handling
-void doc()
-{
+////Documentation
     // vector<Material> materials= Material().materialList();  //// Get the list of materials from the CSV file
 
     ////how to get each material's properties
@@ -395,11 +346,63 @@ void doc()
     //// get stress and find if it is safe or not
     // float stress = StressAnalysis().controlStress();
 
-}
-
 int main()
 {
     
     StressAnalysis().optimizeDims();
     return 0;
+}
+
+string dimPrecision(float value, string unit)
+{
+    if (unit == "m")
+    {
+        if(value>=1000)
+        {
+            return to_string(value*pow(10,-3))+" km"; // convert to kilometers
+        }
+        if(value>=1)
+        {
+            return to_string(value)+" m"; // dimension doesn't need conversion
+        }
+        if(value>=0.01)
+        {
+            return to_string(value*pow(10,2))+" cm"; // convert to centimeters
+        }
+        else if (value<=0.0001)
+        {
+            return to_string(value*pow(10,3))+" mm"; // convert to millimeters
+        }
+    }
+    if (unit == "Pa")
+    {
+        if(value>=100000)
+        {
+            return to_string(value*pow(10,-6))+" MPa"; // convert to MPa
+        }
+        else if (value>=1000)
+        {
+            return to_string(value*pow(10,-3))+" kPa"; // convert to kPa
+        }
+        else
+        {
+            return to_string(value)+" Pa"; // dimension doesn't need conversion
+        }
+    }
+    if (unit == "kg")
+    {
+        if(value>=1000)
+        {
+            return to_string(value*pow(10,-3))+" tons"; // convert to tons
+        }
+        else if(value>=1)
+        {
+            return to_string(value)+" kg"; // dimension doesn't need conversion
+        }
+        else if(value<=0.0001)
+        {
+            return to_string(value*pow(10,3))+" g"; // convert to grams
+        }
+    }
+    return to_string(value)+" "+unit; // default case if unit is not recognized
 }
