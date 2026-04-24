@@ -174,7 +174,7 @@ string crossSectionType; // 1-circular or 2-rectangular
 float linkLength,payloadMass,angAcc,r,b,h;
 Material material = Material().controlMaterial(); // Get material properties from user selection/addition
 float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
-float calculateCirclar()
+float calculateCircular()
 {
     float linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link
     float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link
@@ -222,7 +222,7 @@ float controlStress()
             cout<<"enter angular acceleration: ";
             cin>>angAcc;
 
-            return calculateCirclar();
+            return calculateCircular();
         }
 
         case 2 :
@@ -270,7 +270,7 @@ void optimizeDims(){
                     r*=0.99;
                     cout<<"Stress is below yield. Decreasing radius."<<endl;
                 }
-                stress = calculateCirclar();
+                stress = calculateCircular();
                 if(stress >= yield*0.99 && stress <= yield)
                 {
                     optimized = true;
