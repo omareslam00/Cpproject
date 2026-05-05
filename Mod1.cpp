@@ -317,6 +317,175 @@ void optimizeDims(){
     }
 };
 
+//Class to store motors properties
+class Motor
+{
+public:
+    float diameter; // units in mm
+    float width; // units in mm
+    float speed; // units in rpm
+    float torque; // units in mNm
+    float weight; // units in g
+    vector<Motor> motors;
+
+    
+    Motor(string d="0.0", string w="0.0", string s="0.0", string t="0.0", string m="0.0") {
+        diameter = stof(d);
+        width = stof(w);
+        speed = stof(s);
+        torque = stof(t);
+        weight = stof(m);
+    }
+
+    // Function to read motors from CSV file and return a vector of Motor objects
+    vector<Motor> motorsList()
+    {
+        csvHandler handler("./Data/Processed/materials.csv");
+        fstream file = handler.readCSV();
+        string dataLine;
+        getline(file, dataLine); // Skip header line
+        while (getline(file, dataLine)) {
+            stringstream ss(dataLine);
+            string index,url, d, w, s, t, m;
+            getline(ss, index, ',');  // Read index but not needed
+            getline(ss, url, ',');  // Read URL but not needed
+            getline(ss, d, ',');
+            getline(ss, w, ',');
+            getline(ss, s, ',');
+            getline(ss, t, ',');
+            getline(ss, m, ',');
+            motors.push_back(Motor(d, w, s, t, m));
+        }
+        file.close();
+        return motors;
+    };
+
+    // add Motor to the CSV file/Vector
+    Motor addMotor()
+    {
+        string d, w, s, t, m;
+        cout << "Enter motor diameter | width | speed | torque | weight: ";
+        while (true)
+        {
+            try
+            {
+                cin >> d >> w >> s >> t >> m;
+                stof(d);
+                stof(w);
+                stof(s);
+                stof(t);
+                stof(m);
+                cout << "Motor added successfully!" << endl;
+                break; // Exit loop if conversion is successful
+            }
+            catch(exception e)
+            {
+                cout << "Invalid input. \nPlease enter valid diameter, width, speed, torque, and weight values: " ;
+            }
+            
+        }
+
+        csvHandler handler("./Data/Processed/motors.csv");
+        string dataLine = to_string(motors.size()) + "," + d + "," + w + "," + s + "," + t + "," + m;
+        handler.writeCSV(dataLine);
+        motors.push_back(Motor(d, w, s, t, m));
+        cout << motors.back().diameter << " added to the motors list." << endl;
+        return motors.back();
+    }
+};
+
+//Class to store gearboxes properties
+class Gearbox
+{
+public:
+    float reductionRatio;
+    float torque; // units in mNm
+    float efficiency; // units in percentage
+    float width; // units in mm
+    float weight; // units in g
+    float diameter; // units in mm
+    vector<Gearbox> gearboxes;
+
+    
+    Gearbox(string r="0.0", string t="0.0", string e="0.0", string w="0.0",string m="0.0", string d="0.0") {
+        // handle \ in reduction ratio if it exists (e.g. 1/100)
+        if (r.find('/')) {
+            float numerator = stof(r.substr(0, r.find('/')));
+            float denominator = stof(r.substr(r.find('/') + 1));
+            reductionRatio = numerator / denominator;
+        } else {
+            reductionRatio = 0; // default value if reduction ratio is not provided or invalid
+        }
+
+        torque = stof(t);
+        efficiency = stof(e);
+        width = stof(w);
+        weight = stof(m);
+        diameter = stof(d);
+    }
+
+    // Function to read gearboxes from CSV file and return a vector of Gearbox objects
+    vector<Gearbox> gearboxesList()
+    {
+        csvHandler handler("./Data/Processed/gears.csv");
+        fstream file = handler.readCSV();
+        string dataLine;
+        getline(file, dataLine); // Skip header line
+        while (getline(file, dataLine)) {
+            stringstream ss(dataLine);
+            string index,url, r, t, e, w, m, d;
+            getline(ss, index, ',');  // Read index but not needed
+            getline(ss, url, ',');  // Read URL but not needed
+            getline(ss, r, ',');
+            getline(ss, t, ',');
+            getline(ss, e, ',');
+            getline(ss, w, ',');
+            getline(ss, m, ',');
+            getline(ss, d, ',');
+            gearboxes.push_back(Gearbox(r, t, e, w, m, d));
+        }
+        file.close();
+        return gearboxes;
+    };
+
+    // add Gearbox to the CSV file/Vector
+    Gearbox addGearbox()
+    {
+        string r, t, e, w, m, d;
+        cout << "Enter gearbox reduction ratio | torque | efficiency | width | weight | diameter: ";
+        while (true)
+        {
+            try
+            {
+                cin >> r >> t >> e >> w >> m >> d;
+                stof(r);
+                stof(t);
+                stof(e);
+                stof(w);
+                stof(m);
+                stof(d);
+                cout << "Gearbox added successfully!" << endl;
+                break; // Exit loop if conversion is successful
+            }
+            catch(exception e)
+            {
+                cout << "Invalid input. \nPlease enter valid reduction ratio, torque, efficiency, width, weight, and diameter values: " ;
+            }
+            
+        }
+
+        csvHandler handler("./Data/Processed/gearboxes.csv");
+        string dataLine = to_string(gearboxes.size()) + "," + r + "," + t + "," + e + "," + w + "," + m + "," + d;
+        handler.writeCSV(dataLine);
+        gearboxes.push_back(Gearbox(r, t, e, w, m, d));
+        cout << gearboxes.back().reductionRatio << " added to the gearboxes list." << endl;
+        return gearboxes.back();
+    }
+};
+
+
+
+
 ////Documentation
     // vector<Material> materials= Material().materialList();  //// Get the list of materials from the CSV file
 
@@ -348,10 +517,16 @@ void optimizeDims(){
 
 int main()
 {
-    
-    StressAnalysis().optimizeDims();
+    //print first 50 gearboxes from the CSV file
+    vector<Gearbox> gearboxes = Gearbox().gearboxesList();
+    cout << "Index | Reduction Ratio | Torque(mNm) | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
+    for(int i=0;i<50 && i<gearboxes.size();i++){
+        cout << i << " | " << gearboxes[i].reductionRatio << " | " << gearboxes[i].torque <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
+    }    
     return 0;
 }
+
+
 
 string dimPrecision(float value, string unit)
 {
