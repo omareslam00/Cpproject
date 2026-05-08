@@ -399,8 +399,8 @@ class Gearbox
 {
 public:
     float reductionRatio;
-    float torque; // units in mNm
-    float efficiency; // units in percentage
+    float torque; // units in Nm
+    float efficiency; // units in %
     float width; // units in mm
     float weight; // units in g
     float diameter; // units in mm
