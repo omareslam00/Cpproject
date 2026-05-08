@@ -399,7 +399,6 @@ class Gearbox
 {
 public:
     float reductionRatio;
-    float torque; // units in Nm
     float efficiency; // units in %
     float width; // units in mm
     float weight; // units in g
@@ -407,7 +406,7 @@ public:
     vector<Gearbox> gearboxes;
 
     
-    Gearbox(string r="0.0", string t="0.0", string e="0.0", string w="0.0",string m="0.0", string d="0.0") {
+    Gearbox(string r="0.0", string e="0.0", string w="0.0",string m="0.0", string d="0.0") {
         // handle \ in reduction ratio if it exists (e.g. 1/100)
         if (r.find('/')) {
             float numerator = stof(r.substr(0, r.find('/')));
@@ -416,8 +415,6 @@ public:
         } else {
             reductionRatio = 0; // default value if reduction ratio is not provided or invalid
         }
-
-        torque = stof(t);
         efficiency = stof(e);
         width = stof(w);
         weight = stof(m);
@@ -433,16 +430,15 @@ public:
         getline(file, dataLine); // Skip header line
         while (getline(file, dataLine)) {
             stringstream ss(dataLine);
-            string index,url, r, t, e, w, m, d;
+            string index,url, r, e, w, m, d;
             getline(ss, index, ',');  // Read index but not needed
             getline(ss, url, ',');  // Read URL but not needed
             getline(ss, r, ',');
-            getline(ss, t, ',');
             getline(ss, e, ',');
             getline(ss, w, ',');
             getline(ss, m, ',');
             getline(ss, d, ',');
-            gearboxes.push_back(Gearbox(r, t, e, w, m, d));
+            gearboxes.push_back(Gearbox(r, e, w, m, d));
         }
         file.close();
         return gearboxes;
@@ -451,15 +447,14 @@ public:
     // add Gearbox to the CSV file/Vector
     Gearbox addGearbox()
     {
-        string r, t, e, w, m, d;
-        cout << "Enter gearbox reduction ratio | torque | efficiency | width | weight | diameter: ";
+        string r, e, w, m, d;
+        cout << "Enter gearbox reduction ratio | efficiency | width | weight | diameter: ";
         while (true)
         {
             try
             {
-                cin >> r >> t >> e >> w >> m >> d;
+                cin >> r >> e >> w >> m >> d;
                 stof(r);
-                stof(t);
                 stof(e);
                 stof(w);
                 stof(m);
@@ -469,15 +464,15 @@ public:
             }
             catch(exception e)
             {
-                cout << "Invalid input. \nPlease enter valid reduction ratio, torque, efficiency, width, weight, and diameter values: " ;
+                cout << "Invalid input. \nPlease enter valid reduction ratio, efficiency, width, weight, and diameter values: " ;
             }
             
         }
 
         csvHandler handler("./Data/Processed/gearboxes.csv");
-        string dataLine = to_string(gearboxes.size()) + "," + r + "," + t + "," + e + "," + w + "," + m + "," + d;
+        string dataLine = to_string(gearboxes.size()) + "," + r + "," + e + "," + w + "," + m + "," + d;
         handler.writeCSV(dataLine);
-        gearboxes.push_back(Gearbox(r, t, e, w, m, d));
+        gearboxes.push_back(Gearbox(r, e, w, m, d));
         cout << gearboxes.back().reductionRatio << " added to the gearboxes list." << endl;
         return gearboxes.back();
     }
@@ -519,9 +514,9 @@ int main()
 {
     //print first 50 gearboxes from the CSV file
     vector<Gearbox> gearboxes = Gearbox().gearboxesList();
-    cout << "Index | Reduction Ratio | Torque(mNm) | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
+    cout << "Index | Reduction Ratio | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
     for(int i=0;i<50 && i<gearboxes.size();i++){
-        cout << i << " | " << gearboxes[i].reductionRatio << " | " << gearboxes[i].torque <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
+        cout << i << " | " << gearboxes[i].reductionRatio <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
     }    
     return 0;
 }
