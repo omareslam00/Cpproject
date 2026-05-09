@@ -340,7 +340,7 @@ public:
     // Function to read motors from CSV file and return a vector of Motor objects
     vector<Motor> motorsList()
     {
-        csvHandler handler("./Data/Processed/materials.csv");
+        csvHandler handler("./Data/Processed/motors.csv");
         fstream file = handler.readCSV();
         string dataLine;
         getline(file, dataLine); // Skip header line
@@ -478,8 +478,75 @@ public:
     }
 };
 
+//class to calculate the output torque,output speed for all possible motor-gearbox combinations
+class MotorGearboxPair
+{
+public:
+    int motorIndex;
+    int gearboxIndex;
+    float tOutput; // units in mNm
+    float angVel; // units in rpm
+    MotorGearboxPair(int mI=0, int gI=0, float tO=0.0, float aV=0.0)
+    {
+        motorIndex = mI;
+        gearboxIndex = gI;
+        tOutput = tO;
+        angVel = aV;
+    }
 
 
+    void motorGearboxCombine()
+    {
+        csvHandler handler("./Data/Processed/motor_gearbox_pairs.csv");
+        vector<Motor> motors = Motor().motorsList();
+        vector<Gearbox> gearboxes = Gearbox().gearboxesList();
+        for (int i = 0; i < motors.size(); i++)
+        {
+            for (int j = 0; j < gearboxes.size(); j++)
+            {
+                tOutput = motors[i].torque * gearboxes[j].reductionRatio * (gearboxes[j].efficiency / 100); // Calculate output torque in mNm
+                angVel = motors[i].speed / gearboxes[j].reductionRatio; // Calculate output speed in rpm
+                cout << "Motor Index: " << i << ", Gearbox Index: " << j << ", Output Torque: " << tOutput << " mNm, Output Speed: " << angVel << " rpm" << endl;
+                string dataLine = to_string(i) + "," + to_string(j) + "," + to_string(tOutput) + "," + to_string(angVel);
+                handler.writeCSV(dataLine);
+            }
+        }
+    }
+
+    vector<MotorGearboxPair> motorGearboxList()
+    {
+        csvHandler handler("./Data/Processed/motor_gearbox_pairs.csv");
+        fstream file = handler.readCSV();
+        vector<MotorGearboxPair> pairs;
+        string dataLine;
+        getline(file, dataLine); // Skip header line
+        while (getline(file, dataLine)) {
+            stringstream ss(dataLine);
+            string mI, gI, tO, aV;
+            getline(ss, mI, ',');
+            getline(ss, gI, ',');
+            getline(ss, tO, ',');
+            getline(ss, aV, ',');
+            pairs.push_back(MotorGearboxPair(stoi(mI), stoi(gI), stof(tO), stof(aV)));
+        }
+        return pairs;
+    }
+};
+
+
+//Class to calculate Trequired, Toutput, Output speed and cost function
+class MotorGearboxOptimization : public StressAnalysis
+{
+public:
+    double tRequiredCalc()
+    {
+        return linkMass*g*(linkLength/2) + (payloadMass*g*linkLength) + (linkMass*pow((linkLength/2), 2)*angAcc + payloadMass*pow(linkLength, 2)*angAcc);
+    }
+    double tRequired = tRequiredCalc();
+    
+    
+    
+};
 
 ////Documentation
     // vector<Material> materials= Material().materialList();  //// Get the list of materials from the CSV file
@@ -512,13 +579,15 @@ public:
 
 int main()
 {
-    //print first 50 gearboxes from the CSV file
-    vector<Gearbox> gearboxes = Gearbox().gearboxesList();
-    cout << "Index | Reduction Ratio | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
-    for(int i=0;i<50 && i<gearboxes.size();i++){
-        cout << i << " | " << gearboxes[i].reductionRatio <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
-    }    
-    return 0;
+    // //print first 50 gearboxes from the CSV file
+    // vector<Gearbox> gearboxes = Gearbox().gearboxesList();
+    // cout << "Index | Reduction Ratio | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
+    // for(int i=0;i<50 && i<gearboxes.size();i++){
+    //     cout << i << " | " << gearboxes[i].reductionRatio <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
+    // }    
+    // return 0;
+    MotorGearboxPair().motorGearboxCombine(); // Generate all possible motor-gearbox combinations and save them to a CSV file
+     return 0;
 }
 
 
