@@ -5,15 +5,13 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <algorithm>
 using namespace std;
 
-
-
-
-string dimPrecision(float value, string unit); // Function to convert dimensions to appropriate units based on their magnitude for better readability
+string dimPrecision(double value, string unit); // Function to convert dimensions to appropriate units based on their magnitude for better readability
 
 // Class to handle CSV files operations
-class csvHandler 
+class csvHandler
 {
 public:
     string fileName;
@@ -22,40 +20,43 @@ public:
         fileName = filename;
     }
     // Function to read from CSV file
-    fstream readCSV() {
+    fstream readCSV()
+    {
         fstream file(fileName);
-        if (!file.is_open()) {
+        if (!file.is_open())
+        {
             cout << "Could not open the file!" << endl;
         }
         cout << "File opened successfully!" << endl;
         return file;
     }
-    void writeCSV(string dataLine) {
-        fstream file(fileName,ios::app);
-        if (!file.is_open()) {
+    void writeCSV(string dataLine)
+    {
+        fstream file(fileName, ios::app);
+        if (!file.is_open())
+        {
             cout << "Could not open the file!" << endl;
         }
-        file <<dataLine << endl;
+        file << dataLine << endl;
         cout << "Data written successfully!" << endl;
         file.close();
     }
 };
 
-
-//Class to store material properties
+// Class to store material properties
 class Material
 {
 public:
     string name;
-    float yield;  //units in MPa
-    float density; // units in g/cm^3
+    double yield;   // units in MPa
+    double density; // units in g/cm^3
     vector<Material> materials;
 
-    
-    Material(string n="", string y="0.0", string d="0.0") {
+    Material(string n = "", string y = "0.0", string d = "0.0")
+    {
         name = n;
-        yield = stof(y);
-        density = stof(d);
+        yield = stod(y);
+        density = stod(d);
     }
 
     // Function to read materials from CSV file and return a vector of Material objects
@@ -65,10 +66,11 @@ public:
         fstream file = handler.readCSV();
         string dataLine;
         getline(file, dataLine); // Skip header line
-        while (getline(file, dataLine)) {
+        while (getline(file, dataLine))
+        {
             stringstream ss(dataLine);
             string index, n, y, d;
-            getline(ss, index, ',');  // Read index but not needed
+            getline(ss, index, ','); // Read index but not needed
             getline(ss, n, ',');
             getline(ss, y, ',');
             getline(ss, d, ',');
@@ -88,16 +90,15 @@ public:
             try
             {
                 cin >> n >> y >> d;
-                stof(y);
-                stof(d);
+                stod(y);
+                stod(d);
                 cout << "Material added successfully!" << endl;
                 break; // Exit loop if conversion is successful
             }
-            catch(exception e)
+            catch (exception e)
             {
-                cout << "Invalid input. \nPlease enter valid yield and density values: " ;
+                cout << "Invalid input. \nPlease enter valid yield and density values: ";
             }
-            
         }
 
         csvHandler handler("./Data/Processed/materials.csv");
@@ -109,12 +110,14 @@ public:
     }
 
     // display materials and get user selection
-    Material getMaterial() {
+    Material getMaterial()
+    {
         materials = materialList(); // Load materials from CSV file
         cout << "Available Materials:" << endl;
         cout << "Index | Name | Yield(MPa) | Density(g/cm^3)" << endl;
-        for(int i=0;i<materials.size();i++){
-            cout << i << " | " << materials[i].name << " | " << materials[i].yield <<" | "<< materials[i].density << endl;
+        for (int i = 0; i < materials.size(); i++)
+        {
+            cout << i << " | " << materials[i].name << " | " << materials[i].yield << " | " << materials[i].density << endl;
         }
         string i; // store index as string to be converted to int after validation
         cout << "enter index of the required material:  ";
@@ -124,35 +127,34 @@ public:
         {
             try
             {
-                cin>>i;
+                cin >> i;
                 int index = stoi(i); // Convert string input to integer
-                if (index < 0 || index >= materials.size()) {
-                    throw out_of_range("Index out of range");  // Check if index is within valid range
+                if (index < 0 || index >= materials.size())
+                {
+                    throw out_of_range("Index out of range"); // Check if index is within valid range
                 }
                 cout << "Material selected successfully!" << endl;
                 cout << "Selected Material: " << materials[index].name << endl;
                 return materials[index];
             }
-            catch(exception e)  //catch any error (invalid input or out of range)
+            catch (exception e) // catch any error (invalid input or out of range)
             {
-                cout << "Invalid input. \nPlease enter a valid index: " ;
+                cout << "Invalid input. \nPlease enter a valid index: ";
             }
-            
         }
-
     }
     Material controlMaterial()
     {
         string index;
-        cout<<"1-Add new material \n2-Select material from the list \nEnter your choice: ";
+        cout << "1-Add new material \n2-Select material from the list \nEnter your choice: ";
         try
         {
-            cin>>index;
+            cin >> index;
             stoi(index); // Validate if input is an integer
         }
-        catch(exception e)
+        catch (exception e)
         {
-            cout << "Invalid input. \nPlease enter a valid number: " ;
+            cout << "Invalid input. \nPlease enter a valid number: ";
             return controlMaterial();
         }
         switch (stoi(index))
@@ -162,179 +164,182 @@ public:
         case 2:
             return getMaterial();
         default:
-            cout<<"Enter a valid number \n";
+            cout << "Enter a valid number \n";
             return controlMaterial();
         }
     }
-
 };
 
 class StressAnalysis
 {
 public:
-const float g = 9.81; // Acceleration due to gravity (m/s^2)
-string crossSectionType; // 1-circular or 2-rectangular
-float linkLength; // Length of the link (m)
-float payloadMass; // Mass of the payload (kg)
-float angAcc; // Angular acceleration (rad/s^2)
-float r; // radius for circular cross section (m)
-float b, h; // width and height for rectangular cross section (m)
-float linkMass; // Mass of the link (kg)
+    const double g = 9.81;   // Acceleration due to gravity (m/s^2)
+    string crossSectionType; // 1-circular or 2-rectangular
+    double linkLength;       // Length of the link (m)
+    double payloadMass;      // Mass of the payload (kg)
+    double angAcc;           // Angular acceleration (rad/s^2)
+    double r;                // radius for circular cross section (m)
+    double b, h;             // width and height for rectangular cross section (m)
+    double linkMass;         // Mass of the link (kg)
+    double stress;           // Stress on the link (Pa)
+    double tRequired;
 
-Material material = Material().controlMaterial(); // Get material properties from user selection/addition
-float density = material.density*1000; // Convert density from g/cm^3 to kg/m^3
+    Material material = Material().controlMaterial(); // Get material properties from user selection/addition
+    double density = material.density * 1000;         // Convert density from g/cm^3 to kg/m^3
 
-float calculateCircular()
-{
-    linkMass = density * M_PI * pow(r,2) * linkLength; // Mass of the link (kg)
-    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link (N.m)
-    float I = M_PI*pow(r,4)/4; // Moment of inertia for circular cross section (m^4)
-    float stress = (bendingMoment * r / I); // Maximum stress formula
-    return stress;
-}
-
-float calculateRectangular()
-{
-    linkMass = density * b * h * linkLength; // Mass of the link (kg)
-    float bendingMoment = linkMass * g * (linkLength/2) + payloadMass * g * linkLength + linkMass * pow(linkLength/2,2) * angAcc + payloadMass * pow(linkLength,2) * angAcc; // Momentum of the link (N.m)
-    float I = (b * pow(h,3)) / 12; // Moment of inertia for rectangular cross section (m^4)
-    float stress = (bendingMoment * h / (2 * I)); // Maximum stress formula
-    return stress;
-}
-
-
-float controlStress()
-{
-    cout<<"Enter cross section type (1-circular 2-rectangular): ";
-    try
+    void calculateCircular()
     {
-        cin>> crossSectionType;
-        stoi(crossSectionType); // Validate if input is an integer
+        linkMass = density * M_PI * pow(r, 2) * linkLength;                                                                                                                             // Mass of the link (kg)
+        double bendingMoment = linkMass * g * (linkLength / 2) + payloadMass * g * linkLength + linkMass * pow(linkLength / 2, 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc; // Momentum of the link (N.m)
+        double I = M_PI * pow(r, 4) / 4;                                                                                                                                                // Moment of inertia for circular cross section (m^4)
+        stress = (bendingMoment * r / I);                                                                                                                                        // Maximum stress formula
     }
-    catch(exception e)
+
+    void calculateRectangular()
     {
-        cout << "Invalid input. \nPlease enter a valid number: " ;
-        return controlStress();
+        linkMass = density * b * h * linkLength;                                                                                                                                        // Mass of the link (kg)
+        double bendingMoment = linkMass * g * (linkLength / 2) + payloadMass * g * linkLength + linkMass * pow(linkLength / 2, 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc; // Momentum of the link (N.m)
+        double I = (b * pow(h, 3)) / 12;                                                                                                                                                // Moment of inertia for rectangular cross section (m^4)
+        stress = (bendingMoment * h / (2 * I));                                                                                                                                  // Maximum stress formula
     }
-    switch (stoi(crossSectionType))
-    {    
+
+    void controlStress()
+    {
+        cout << "Enter cross section type (1-circular 2-rectangular): ";
+        try
+        {
+            cin >> crossSectionType;
+            stoi(crossSectionType); // Validate if input is an integer
+        }
+        catch (exception e)
+        {
+            cout << "Invalid input. \nPlease enter a valid number: ";
+            controlStress();
+        }
+        switch (stoi(crossSectionType))
+        {
         case 1:
         {
-            cout<<"Enter radius(m): ";
-            cin>>r;
+            cout << "Enter radius(m): ";
+            cin >> r;
 
-            cout<<"enter link length(m): ";
-            cin>>linkLength;
+            cout << "enter link length(m): ";
+            cin >> linkLength;
 
-            cout<<"enter payload mass(kg): ";
-            cin>>payloadMass;
+            cout << "enter payload mass(kg): ";
+            cin >> payloadMass;
 
-            cout<<"enter angular acceleration(rad/s^2): ";
-            cin>>angAcc;
+            cout << "enter angular acceleration(rad/s^2): ";
+            cin >> angAcc;
 
-            return calculateCircular();
+            calculateCircular();
         }
+        break;
 
-        case 2 :
+        case 2:
         {
-            cout<<"Enter width(m): ";
-            cin>>b;
+            cout << "Enter width(m): ";
+            cin >> b;
 
-            cout<<"Enter height(m): ";
-            cin>>h;
+            cout << "Enter height(m): ";
+            cin >> h;
 
-            cout<<"enter link length(m): ";
-            cin>>linkLength;
+            cout << "enter link length(m): ";
+            cin >> linkLength;
 
-            cout<<"enter payload mass(kg): ";
-            cin>>payloadMass;
+            cout << "enter payload mass(kg): ";
+            cin >> payloadMass;
 
-            cout<<"enter angular acceleration(rad/s^2): ";
-            cin>>angAcc;
+            cout << "enter angular acceleration(rad/s^2): ";
+            cin >> angAcc;
 
-            return calculateRectangular();
+            calculateRectangular();
         }
+        break;
 
-        default :
-        cout<<"Enter Valid type"<<endl;
-        return controlStress();
+        default:
+            cout << "Enter Valid type" << endl;
+            controlStress();
+        }
     }
-}
 
-void optimizeDims(){
-    float stress = controlStress();
-    bool optimized = false;
-    float yield = material.yield*pow(10,6); // Convert yield from MPa to Pa for comparison with stress in Pa
-    switch (stoi(crossSectionType))
-        {    
+    void optimizeDims()
+    {
+        bool optimized = false;
+        double yield = material.yield * pow(10, 6); // Convert yield from MPa to Pa for comparison with stress in Pa
+        switch (stoi(crossSectionType))
+        {
         case 1:
-            while(!optimized)
+            while (!optimized)
             {
+                calculateCircular();
                 if (stress > yield)
                 {
-                    r*=1.01;
+                    r *= 1.01;
                 }
                 else if (stress < yield)
                 {
-                    r*=0.99;
+                    r *= 0.99;
                 }
-                stress = calculateCircular();
-                if(stress >= yield*0.99 && stress <= yield)
+                if (stress >= yield * 0.99 && stress <= yield)
                 {
                     optimized = true;
-                    cout<<"Optimized radius: "<<dimPrecision(r,"m")<<endl;
-                    cout<<"Optimized stress: "<<dimPrecision(stress,"Pa")<<endl;
-                    cout<<"link mass: "<<dimPrecision(linkMass,"kg")<<endl;
-                }
-            }
-            break;
-        
-        case 2:
-            while(!optimized)
-            {
-                if(stress > yield)
-                {
-                    b*=1.01;
-                    h*=1.01;
-                }
-                else if(stress < yield)
-                {
-                    b*=0.99;
-                    h*=0.99;
-                }
-                stress = calculateRectangular();
-                if(stress >= yield*0.99 && stress <= yield)
-                {
-                    optimized = true;
-                    cout<<"Optimized dimensions: width = "<<dimPrecision(b,"m")<<", height = "<<dimPrecision(h,"m")<<endl;
-                    cout<<"Optimized stress: "<<dimPrecision(stress,"Pa")<<endl;
-                    cout<<"Optimized link mass: "<<dimPrecision(linkMass,"kg")<<endl;
+                    cout << "Optimized radius: " << dimPrecision(r, "m") << endl;
+                    cout << "Optimized stress: " << dimPrecision(stress, "Pa") << endl;
+                    cout << "link mass: " << dimPrecision(linkMass, "kg") << endl;
+                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc))* 1000; // Calculate required torque in mNm based on the stress analysis results
+                    cout<<"Required Torque is: "<<tRequired<<endl;
                 }
             }
             break;
 
+        case 2:
+            while (!optimized)
+            {
+                calculateRectangular();
+                if (stress > yield)
+                {
+                    b *= 1.01;
+                    h *= 1.01;
+                }
+                else if (stress < yield)
+                {
+                    b *= 0.99;
+                    h *= 0.99;
+                }
+                if (stress >= yield * 0.99 && stress <= yield)
+                {
+                    optimized = true;
+                    cout << "Optimized dimensions: width = " << dimPrecision(b, "m") << ", height = " << dimPrecision(h, "m") << endl;
+                    cout << "Optimized stress: " << dimPrecision(stress, "Pa") << endl;
+                    cout << "Optimized link mass: " << dimPrecision(linkMass, "kg") << endl;
+                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc))* 1000; // Calculate required torque in mNm based on the stress analysis results
+                    cout<<"Required Torque is: "<<tRequired<<endl;
+                }
+            }
+            break;
         }
     }
 };
 
-//Class to store motors properties
+// Class to store motors properties
 class Motor
 {
 public:
-    float diameter; // units in mm
-    float width; // units in mm
-    float speed; // units in rpm
-    float torque; // units in mNm
-    float weight; // units in g
+    double diameter; // units in mm
+    double width;    // units in mm
+    double speed;    // units in rpm
+    double torque;   // units in mNm
+    double weight;   // units in g
     vector<Motor> motors;
 
-    
-    Motor(string d="0.0", string w="0.0", string s="0.0", string t="0.0", string m="0.0") {
-        diameter = stof(d);
-        width = stof(w);
-        speed = stof(s);
-        torque = stof(t);
-        weight = stof(m);
+    Motor(string d = "0.0", string w = "0.0", string s = "0.0", string t = "0.0", string m = "0.0")
+    {
+        diameter = stod(d);
+        width = stod(w);
+        speed = stod(s);
+        torque = stod(t);
+        weight = stod(m);
     }
 
     // Function to read motors from CSV file and return a vector of Motor objects
@@ -344,11 +349,12 @@ public:
         fstream file = handler.readCSV();
         string dataLine;
         getline(file, dataLine); // Skip header line
-        while (getline(file, dataLine)) {
+        while (getline(file, dataLine))
+        {
             stringstream ss(dataLine);
-            string index,url, d, w, s, t, m;
-            getline(ss, index, ',');  // Read index but not needed
-            getline(ss, url, ',');  // Read URL but not needed
+            string index, url, d, w, s, t, m;
+            getline(ss, index, ','); // Read index but not needed
+            getline(ss, url, ',');   // Read URL but not needed
             getline(ss, d, ',');
             getline(ss, w, ',');
             getline(ss, s, ',');
@@ -370,19 +376,18 @@ public:
             try
             {
                 cin >> d >> w >> s >> t >> m;
-                stof(d);
-                stof(w);
-                stof(s);
-                stof(t);
-                stof(m);
+                stod(d);
+                stod(w);
+                stod(s);
+                stod(t);
+                stod(m);
                 cout << "Motor added successfully!" << endl;
                 break; // Exit loop if conversion is successful
             }
-            catch(exception e)
+            catch (exception e)
             {
-                cout << "Invalid input. \nPlease enter valid diameter, width, speed, torque, and weight values: " ;
+                cout << "Invalid input. \nPlease enter valid diameter, width, speed, torque, and weight values: ";
             }
-            
         }
 
         csvHandler handler("./Data/Processed/motors.csv");
@@ -394,31 +399,34 @@ public:
     }
 };
 
-//Class to store gearboxes properties
+// Class to store gearboxes properties
 class Gearbox
 {
 public:
-    float reductionRatio;
-    float efficiency; // units in %
-    float width; // units in mm
-    float weight; // units in g
-    float diameter; // units in mm
+    double reductionRatio;
+    double efficiency; // units in %
+    double width;      // units in mm
+    double weight;     // units in g
+    double diameter;   // units in mm
     vector<Gearbox> gearboxes;
 
-    
-    Gearbox(string r="0.0", string e="0.0", string w="0.0",string m="0.0", string d="0.0") {
-        // handle \ in reduction ratio if it exists (e.g. 1/100)
-        if (r.find('/')) {
-            float numerator = stof(r.substr(0, r.find('/')));
-            float denominator = stof(r.substr(r.find('/') + 1));
+    Gearbox(string r = "0.0", string e = "0.0", string w = "0.0", string m = "0.0", string d = "0.0")
+    {
+        // handle \ in reduction ratio if it exists (example: 1/100)
+        if (r.find('/'))
+        {
+            double numerator = stod(r.substr(0, r.find('/')));
+            double denominator = stod(r.substr(r.find('/') + 1));
             reductionRatio = numerator / denominator;
-        } else {
+        }
+        else
+        {
             reductionRatio = 0; // default value if reduction ratio is not provided or invalid
         }
-        efficiency = stof(e);
-        width = stof(w);
-        weight = stof(m);
-        diameter = stof(d);
+        efficiency = stod(e);
+        width = stod(w);
+        weight = stod(m);
+        diameter = stod(d);
     }
 
     // Function to read gearboxes from CSV file and return a vector of Gearbox objects
@@ -428,11 +436,12 @@ public:
         fstream file = handler.readCSV();
         string dataLine;
         getline(file, dataLine); // Skip header line
-        while (getline(file, dataLine)) {
+        while (getline(file, dataLine))
+        {
             stringstream ss(dataLine);
-            string index,url, r, e, w, m, d;
-            getline(ss, index, ',');  // Read index but not needed
-            getline(ss, url, ',');  // Read URL but not needed
+            string index, url, r, e, w, m, d;
+            getline(ss, index, ','); // Read index but not needed
+            getline(ss, url, ',');   // Read URL but not needed
             getline(ss, r, ',');
             getline(ss, e, ',');
             getline(ss, w, ',');
@@ -454,19 +463,18 @@ public:
             try
             {
                 cin >> r >> e >> w >> m >> d;
-                stof(r);
-                stof(e);
-                stof(w);
-                stof(m);
-                stof(d);
+                stod(r);
+                stod(e);
+                stod(w);
+                stod(m);
+                stod(d);
                 cout << "Gearbox added successfully!" << endl;
                 break; // Exit loop if conversion is successful
             }
-            catch(exception e)
+            catch (exception e)
             {
-                cout << "Invalid input. \nPlease enter valid reduction ratio, efficiency, width, weight, and diameter values: " ;
+                cout << "Invalid input. \nPlease enter valid reduction ratio, efficiency, width, weight, and diameter values: ";
             }
-            
         }
 
         csvHandler handler("./Data/Processed/gearboxes.csv");
@@ -478,22 +486,21 @@ public:
     }
 };
 
-//class to calculate the output torque,output speed for all possible motor-gearbox combinations
+// class to calculate the output torque,output speed for all possible motor-gearbox combinations
 class MotorGearboxPair
 {
 public:
     int motorIndex;
     int gearboxIndex;
-    float tOutput; // units in mNm
-    float angVel; // units in rpm
-    MotorGearboxPair(int mI=0, int gI=0, float tO=0.0, float aV=0.0)
+    double tOutput; // units in mNm
+    double angVel;  // units in rpm
+    MotorGearboxPair(int mI = 0, int gI = 0, double tO = 0.0, double aV = 0.0)
     {
         motorIndex = mI;
         gearboxIndex = gI;
         tOutput = tO;
         angVel = aV;
     }
-
 
     void motorGearboxCombine()
     {
@@ -505,7 +512,7 @@ public:
             for (int j = 0; j < gearboxes.size(); j++)
             {
                 tOutput = motors[i].torque * gearboxes[j].reductionRatio * (gearboxes[j].efficiency / 100); // Calculate output torque in mNm
-                angVel = motors[i].speed / gearboxes[j].reductionRatio; // Calculate output speed in rpm
+                angVel = motors[i].speed / gearboxes[j].reductionRatio;                                     // Calculate output speed in rpm
                 cout << "Motor Index: " << i << ", Gearbox Index: " << j << ", Output Torque: " << tOutput << " mNm, Output Speed: " << angVel << " rpm" << endl;
                 string dataLine = to_string(i) + "," + to_string(j) + "," + to_string(tOutput) + "," + to_string(angVel);
                 handler.writeCSV(dataLine);
@@ -520,128 +527,235 @@ public:
         vector<MotorGearboxPair> pairs;
         string dataLine;
         getline(file, dataLine); // Skip header line
-        while (getline(file, dataLine)) {
+        while (getline(file, dataLine))
+        {
             stringstream ss(dataLine);
             string mI, gI, tO, aV;
             getline(ss, mI, ',');
             getline(ss, gI, ',');
             getline(ss, tO, ',');
             getline(ss, aV, ',');
-            pairs.push_back(MotorGearboxPair(stoi(mI), stoi(gI), stof(tO), stof(aV)));
+            pairs.push_back(MotorGearboxPair(stoi(mI), stoi(gI), abs(stod(tO)), stod(aV)));
         }
         return pairs;
     }
 };
 
-
-//Class to calculate Trequired, Toutput, Output speed and cost function
+// Class to calculate Trequired, Toutput, Output speed and cost function
 class MotorGearboxOptimization : public StressAnalysis
 {
 public:
-    double tRequiredCalc()
+    vector<MotorGearboxPair> pairs = MotorGearboxPair().motorGearboxList();
+    vector<Motor> motors = Motor().motorsList();
+    vector<Gearbox> gearboxes = Gearbox().gearboxesList();
+    // sort pairs based on output torque in descending order
+    void sortPairs(int criteria)
     {
-        return linkMass*g*(linkLength/2) + (payloadMass*g*linkLength) + (linkMass*pow((linkLength/2), 2)*angAcc + payloadMass*pow(linkLength, 2)*angAcc);
+        sort(pairs.begin(), pairs.end(), [criteria](const MotorGearboxPair &a, const MotorGearboxPair &b)
+             {
+                    switch (criteria)
+                    {
+                    case 1: // Sort by output torque
+                        return a.tOutput > b.tOutput; // Descending order
+                    case 2: // Sort by output speed
+                        return a.angVel > b.angVel; // Descending order
+                    default:
+                        return false; // No sorting if criteria is invalid
+                    } });
     }
-    double tRequired = tRequiredCalc();
-    
-    
-    
+
+    // function to elimenate pairs that do not meet the required torque
+    void filterPairs(int criteria)
+    {
+        switch (criteria)
+        {
+        case 1: // Filter by output torque
+        {
+            for (int i = pairs.size()-1; i >= 0; i--)
+            {
+                if (pairs[i].tOutput <= tRequired)
+                {
+                    pairs.erase(pairs.begin() + i); // Remove pairs that do not meet the required torque
+                }
+            }
+            break;
+        }
+        case 2: // Filter by output speed
+        {
+        cout << "Enter required output speed (rpm): ";
+        string angVelRequired; // rpm
+        try
+        {      
+            cin >> angVelRequired;
+            stod(angVelRequired); // Validate if input is a number
+        }
+        catch (exception e)       
+        {
+            cout << "Invalid input. \nPlease enter a valid number: ";
+            filterPairs(criteria);
+        }
+            for (int i = pairs.size()-1; i >= 0; i--)
+            {
+                if (pairs[i].angVel <= stod(angVelRequired))
+                {
+                    pairs.erase(pairs.begin() + i); // Remove pairs that do not meet the required speed
+                }
+            }
+            break;
+        }
+        }
+    }
+
+    // function to calculate cost function for each pair and sort pairs based on cost function in ascending order
+    MotorGearboxPair costFunction()
+    {
+        string criteria;
+        cout << "Enter Cost function criteria (1-mass + dimensions 2- mass only): ";
+        try
+        {
+            cin >> criteria;
+            stoi(criteria); // Validate if input is an integer
+        }
+        catch (exception e)
+        {
+            cout << "Invalid input. \nPlease enter a valid number: ";
+            return costFunction();
+        }
+        vector<pair<double, MotorGearboxPair>> costPairs; // Vector to store cost and corresponding pair
+
+        switch (stoi(criteria))
+        {
+        case 1:
+            for (int i = pairs.size()-1; i >= 0; i--)
+            {
+                Motor motor = motors[pairs[i].motorIndex];
+                Gearbox gearbox = gearboxes[pairs[i].gearboxIndex];
+                double cost = motor.weight + gearbox.weight + (motor.diameter + motor.width + gearbox.width + gearbox.diameter) / 100; // Example cost function based on weight and dimensions
+                costPairs.push_back(make_pair(cost, pairs[i]));                                                                        // Add cost and pair to the vector
+                // Sort costPairs based on cost in ascending order
+            }
+            sort(costPairs.begin(), costPairs.end(), [](const pair<double, MotorGearboxPair> &a, const pair<double, MotorGearboxPair> &b)
+                    {
+                        return a.first < b.first; // Ascending order
+                    });
+            return costPairs[0].second; // Return the pair with the lowest cost
+        case 2:
+            for (int i = pairs.size()-1; i >= 0; i--)
+            {
+                Motor motor = motors[pairs[i].motorIndex];
+                Gearbox gearbox = gearboxes[pairs[i].gearboxIndex];
+                double cost = motor.weight + gearbox.weight;    // Example cost function based on weight and dimensions
+                costPairs.push_back(make_pair(cost, pairs[i])); // Add cost and pair to the vector
+                // Sort costPairs based on cost in ascending order
+            }
+            sort(costPairs.begin(), costPairs.end(), [](const pair<double, MotorGearboxPair> &a, const pair<double, MotorGearboxPair> &b)
+                    {
+                        return a.first < b.first; // Ascending order
+                    });
+            return costPairs[0].second; // Return the pair with the lowest cost
+        default:
+            cout << "Enter a valid number \n";
+            return costFunction();
+        }
+    }
 };
 
 ////Documentation
-    // vector<Material> materials= Material().materialList();  //// Get the list of materials from the CSV file
+// vector<Material> materials= Material().materialList();  //// Get the list of materials from the CSV file
 
-    ////how to get each material's properties
+////how to get each material's properties
 
-    // for(int i=0;i<materials.size();i++){
-    //         cout << i << " | " << materials[i].name << " | " << materials[i].yield <<" | "<< materials[i].density << endl;
-    //     }
+// for(int i=0;i<materials.size();i++){
+//         cout << i << " | " << materials[i].name << " | " << materials[i].yield <<" | "<< materials[i].density << endl;
+//     }
 
-    //// add a new material to the CSV file and the materials vector
+//// add a new material to the CSV file and the materials vector
 
-    //Material().addMaterial();
+// Material().addMaterial();
 
+//// get the value of specific material property
 
-    //// get the value of specific material property
+// cout<<Material().materialList()[0].name<<endl;
 
-    //cout<<Material().materialList()[0].name<<endl;
+//// get user selection of material and display its properties
+// Material material = Material().getMaterial();
+// cout << "Selected Material: " << material.name << ", Yield: " << material.yield << ", Density: " << material.density << endl;
 
+//// get user select/add material and display its properties
+// Material material = Material().controlMaterial();
 
-    //// get user selection of material and display its properties
-    // Material material = Material().getMaterial();
-    // cout << "Selected Material: " << material.name << ", Yield: " << material.yield << ", Density: " << material.density << endl;
-
-    //// get user select/add material and display its properties
-    //Material material = Material().controlMaterial();
-
-    //// get stress and find if it is safe or not
-    // float stress = StressAnalysis().controlStress();
+//// get stress and find if it is safe or not
+// double stress = StressAnalysis().controlStress();
 
 int main()
 {
-    // //print first 50 gearboxes from the CSV file
-    // vector<Gearbox> gearboxes = Gearbox().gearboxesList();
-    // cout << "Index | Reduction Ratio | Efficiency(%) | Width(mm) | Weight(g) | Diameter(mm)" << endl;
-    // for(int i=0;i<50 && i<gearboxes.size();i++){
-    //     cout << i << " | " << gearboxes[i].reductionRatio <<" | "<< gearboxes[i].efficiency <<" | "<< gearboxes[i].width <<" | "<< gearboxes[i].weight <<" | "<< gearboxes[i].diameter << endl;
-    // }    
-    // return 0;
-    MotorGearboxPair().motorGearboxCombine(); // Generate all possible motor-gearbox combinations and save them to a CSV file
-     return 0;
+    MotorGearboxOptimization optimization;
+    optimization.controlStress(); // Get the required torque based on the stress analysis results
+    optimization.optimizeDims(); // Optimize the dimensions of the link to meet the required torque
+    optimization.sortPairs(1);   // Sort pairs based on output torque
+    cout << optimization.pairs[optimization.pairs.size()-1].tOutput << endl;
+    optimization.filterPairs(1); // Filter pairs based on output torque
+    cout << optimization.pairs[optimization.pairs.size()-1].tOutput << endl;
+    optimization.sortPairs(2);   // Sort pairs based on output speed
+    cout << optimization.pairs[optimization.pairs.size()-1].angVel << endl;
+    optimization.filterPairs(2); // Filter pairs based on output speed
+    cout << optimization.pairs[optimization.pairs.size()-1].angVel << endl;
+    MotorGearboxPair bestPair = optimization.costFunction(); // Get the best motor-gearbox pair based on the cost function
+    cout << "Best Motor-Gearbox Pair: Motor Index: " << bestPair.motorIndex << ", Gearbox Index: " << bestPair.gearboxIndex << ", Output Torque: " << bestPair.tOutput << " mNm, Output Speed: " << bestPair.angVel << " rpm" << endl;
+    cout << "Required Torque: " << optimization.tRequired << " mNm" << endl;
+    return 0;
 }
 
-
-
-string dimPrecision(float value, string unit)
+string dimPrecision(double value, string unit)
 {
     if (unit == "m")
     {
-        if(value>=1000)
+        if (value >= 1000)
         {
-            return to_string(value*pow(10,-3))+" km"; // convert to kilometers
+            return to_string(value * pow(10, -3)) + " km"; // convert to kilometers
         }
-        if(value>=1)
+        if (value >= 1)
         {
-            return to_string(value)+" m"; // dimension doesn't need conversion
+            return to_string(value) + " m"; // dimension doesn't need conversion
         }
-        if(value>=0.01)
+        if (value >= 0.01)
         {
-            return to_string(value*pow(10,2))+" cm"; // convert to centimeters
+            return to_string(value * pow(10, 2)) + " cm"; // convert to centimeters
         }
-        else if (value<=0.0001)
+        else if (value <= 0.0001)
         {
-            return to_string(value*pow(10,3))+" mm"; // convert to millimeters
+            return to_string(value * pow(10, 3)) + " mm"; // convert to millimeters
         }
     }
     if (unit == "Pa")
     {
-        if(value>=100000)
+        if (value >= 100000)
         {
-            return to_string(value*pow(10,-6))+" MPa"; // convert to MPa
+            return to_string(value * pow(10, -6)) + " MPa"; // convert to MPa
         }
-        else if (value>=1000)
+        else if (value >= 1000)
         {
-            return to_string(value*pow(10,-3))+" kPa"; // convert to kPa
+            return to_string(value * pow(10, -3)) + " kPa"; // convert to kPa
         }
         else
         {
-            return to_string(value)+" Pa"; // dimension doesn't need conversion
+            return to_string(value) + " Pa"; // dimension doesn't need conversion
         }
     }
     if (unit == "kg")
     {
-        if(value>=1000)
+        if (value >= 1000)
         {
-            return to_string(value*pow(10,-3))+" tons"; // convert to tons
+            return to_string(value * pow(10, -3)) + " tons"; // convert to tons
         }
-        else if(value>=1)
+        else if (value >= 1)
         {
-            return to_string(value)+" kg"; // dimension doesn't need conversion
+            return to_string(value) + " kg"; // dimension doesn't need conversion
         }
-        else if(value<=0.0001)
+        else if (value <= 0.0001)
         {
-            return to_string(value*pow(10,3))+" g"; // convert to grams
+            return to_string(value * pow(10, 3)) + " g"; // convert to grams
         }
     }
-    return to_string(value)+" "+unit; // default case if unit is not recognized
+    return to_string(value) + " " + unit; // default case if unit is not recognized
 }
