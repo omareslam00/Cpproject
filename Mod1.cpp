@@ -331,15 +331,17 @@ public:
     double speed;    // units in rpm
     double torque;   // units in mNm
     double weight;   // units in g
+    string url;     // URL to the motor product page
     vector<Motor> motors;
 
-    Motor(string d = "0.0", string w = "0.0", string s = "0.0", string t = "0.0", string m = "0.0")
+    Motor(string u="https://example.com/" ,string d = "0.0", string w = "0.0", string s = "0.0", string t = "0.0", string m = "0.0")
     {
         diameter = stod(d);
         width = stod(w);
         speed = stod(s);
         torque = stod(t);
         weight = stod(m);
+        url = u;
     }
 
     // Function to read motors from CSV file and return a vector of Motor objects
@@ -354,13 +356,13 @@ public:
             stringstream ss(dataLine);
             string index, url, d, w, s, t, m;
             getline(ss, index, ','); // Read index but not needed
-            getline(ss, url, ',');   // Read URL but not needed
+            getline(ss, url, ',');
             getline(ss, d, ',');
             getline(ss, w, ',');
             getline(ss, s, ',');
             getline(ss, t, ',');
             getline(ss, m, ',');
-            motors.push_back(Motor(d, w, s, t, m));
+            motors.push_back(Motor(url, d, w, s, t, m));
         }
         file.close();
         return motors;
@@ -403,6 +405,7 @@ public:
 class Gearbox
 {
 public:
+    string url;       // URL to the gearbox product page
     double reductionRatio;
     double efficiency; // units in %
     double width;      // units in mm
@@ -410,7 +413,7 @@ public:
     double diameter;   // units in mm
     vector<Gearbox> gearboxes;
 
-    Gearbox(string r = "0.0", string e = "0.0", string w = "0.0", string m = "0.0", string d = "0.0")
+    Gearbox(string u="https://example.com/", string r = "0.0", string e = "0.0", string w = "0.0", string m = "0.0", string d = "0.0")
     {
         // handle \ in reduction ratio if it exists (example: 1/100)
         if (r.find('/'))
@@ -427,6 +430,7 @@ public:
         width = stod(w);
         weight = stod(m);
         diameter = stod(d);
+        url = u;
     }
 
     // Function to read gearboxes from CSV file and return a vector of Gearbox objects
@@ -441,13 +445,13 @@ public:
             stringstream ss(dataLine);
             string index, url, r, e, w, m, d;
             getline(ss, index, ','); // Read index but not needed
-            getline(ss, url, ',');   // Read URL but not needed
+            getline(ss, url, ',');
             getline(ss, r, ',');
             getline(ss, e, ',');
             getline(ss, w, ',');
             getline(ss, m, ',');
             getline(ss, d, ',');
-            gearboxes.push_back(Gearbox(r, e, w, m, d));
+            gearboxes.push_back(Gearbox(url, r, e, w, m, d));
         }
         file.close();
         return gearboxes;
@@ -710,60 +714,17 @@ int main()
         return 0;
     }
     MotorGearboxPair bestPair = optimization.costFunction(); // Get the best motor-gearbox pair based on the cost function
-    cout << "Best Motor-Gearbox Pair: Motor Index: " << bestPair.motorIndex << ", Gearbox Index: " << bestPair.gearboxIndex << ", Output Torque: " << bestPair.tOutput << " mNm, Output Speed: " << bestPair.angVel << " rpm" << endl;
+    cout << "Best Motor-Gearbox Pair: Motor Index: " << bestPair.motorIndex << ", Motor link: " << optimization.motors[bestPair.motorIndex].url << "\nGearbox Index: " << bestPair.gearboxIndex << ", Gearbox link: " << optimization.gearboxes[bestPair.gearboxIndex].url << "\nOutput Torque: " << bestPair.tOutput << " mNm, Output Speed: " << bestPair.angVel << " rpm" << endl;
     return 0;
 }
 
 string dimPrecision(double value, string unit)
 {
- if (unit == "m")
-    {
-        if (value >= 1000)
-        {
-            return to_string(value * pow(10, -3)) + " km"; // convert to kilometers
-        }
-        if (value >= 1)
-        {
-            return to_string(value) + " m"; // dimension doesn't need conversion
-        }
-        if (value >= 0.01)
-        {
-            return to_string(value * pow(10, 2)) + " cm"; // convert to centimeters
-        }
-        else if (value <= 0.0001)
-        {
-            return to_string(value * pow(10, 3)) + " mm"; // convert to millimeters
-        }
+    int orderOfMagnitude = floor(log10(abs(value)));
+    if(orderOfMagnitude >= 3 || orderOfMagnitude <= -2){
+    return to_string(value * pow(10, -orderOfMagnitude)) + " x 10^" + to_string(orderOfMagnitude) + " " + unit;
     }
-    if (unit == "Pa")
-    {
-        if (value >= 100000)
-        {
-            return to_string(value * pow(10, -6)) + " MPa"; // convert to MPa
-        }
-        else if (value >= 1000)
-        {
-            return to_string(value * pow(10, -3)) + " kPa"; // convert to kPa
-        }
-        else
-        {
-            return to_string(value) + " Pa"; // dimension doesn't need conversion
-        }
+    else{
+        return to_string(value) + " " + unit;
     }
-    if (unit == "kg")
-    {
-        if (value >= 1000)
-        {
-            return to_string(value * pow(10, -3)) + " tons"; // convert to tons
-        }
-        else if (value >= 1)
-        {
-            return to_string(value) + " kg"; // dimension doesn't need conversion
-        }
-        else if (value <= 0.0001)
-        {
-            return to_string(value * pow(10, 3)) + " g"; // convert to grams
-        }
-    }
-    return to_string(value) + " " + unit; // default case if unit is not recognized
 }
