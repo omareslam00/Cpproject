@@ -565,19 +565,22 @@ public:
     }
 
     // function to elimenate pairs that do not meet the required torque
-    void filterPairs(int criteria)
+    int filterPairs(int criteria)
     {
         switch (criteria)
         {
         case 1: // Filter by output torque
         {
-            for (int i = pairs.size()-1; i >= 0; i--)
+            while(pairs.back().tOutput < tRequired) // Remove pairs that do not meet the required torque
             {
-                if (pairs[i].tOutput <= tRequired)
+            pairs.pop_back();
+                if(pairs.empty())
                 {
-                    pairs.erase(pairs.begin() + i); // Remove pairs that do not meet the required torque
+                    cout<<"No motor-gearbox pair meets the required torque. Please optimize the link dimensions or select a different material."<<endl;
+                    return 0;
                 }
             }
+            return 1;
             break;
         }
         case 2: // Filter by output speed
@@ -594,16 +597,20 @@ public:
             cout << "Invalid input. \nPlease enter a valid number: ";
             filterPairs(criteria);
         }
-            for (int i = pairs.size()-1; i >= 0; i--)
+        while(pairs.back().angVel < stod(angVelRequired)) // Remove pairs that do not meet the required output speed
             {
-                if (pairs[i].angVel <= stod(angVelRequired))
+                pairs.pop_back();
+                if(pairs.empty())
                 {
-                    pairs.erase(pairs.begin() + i); // Remove pairs that do not meet the required speed
+                    cout<<"No motor-gearbox pair meets the required output speed. Please optimize the link dimensions or select a different material."<<endl;
+                    return 0;
                 }
             }
+            return 1;
             break;
         }
         }
+        return 0;
     }
 
     // function to calculate cost function for each pair and sort pairs based on cost function in ascending order
@@ -693,22 +700,23 @@ int main()
     optimization.controlStress(); // Get the required torque based on the stress analysis results
     optimization.optimizeDims(); // Optimize the dimensions of the link to meet the required torque
     optimization.sortPairs(1);   // Sort pairs based on output torque
-    cout << optimization.pairs[optimization.pairs.size()-1].tOutput << endl;
-    optimization.filterPairs(1); // Filter pairs based on output torque
-    cout << optimization.pairs[optimization.pairs.size()-1].tOutput << endl;
-    optimization.sortPairs(2);   // Sort pairs based on output speed
-    cout << optimization.pairs[optimization.pairs.size()-1].angVel << endl;
-    optimization.filterPairs(2); // Filter pairs based on output speed
-    cout << optimization.pairs[optimization.pairs.size()-1].angVel << endl;
+    if (!optimization.filterPairs(1))  // Filter pairs based on output torque, terminate if no pair meets the required torque
+    {
+        return 0;
+    }
+    optimization.sortPairs(2);   // Sort pairs based on output speed, terminate if no pair meets the required output speed
+    if (!optimization.filterPairs(2))
+    {
+        return 0;
+    }
     MotorGearboxPair bestPair = optimization.costFunction(); // Get the best motor-gearbox pair based on the cost function
     cout << "Best Motor-Gearbox Pair: Motor Index: " << bestPair.motorIndex << ", Gearbox Index: " << bestPair.gearboxIndex << ", Output Torque: " << bestPair.tOutput << " mNm, Output Speed: " << bestPair.angVel << " rpm" << endl;
-    cout << "Required Torque: " << optimization.tRequired << " mNm" << endl;
     return 0;
 }
 
 string dimPrecision(double value, string unit)
 {
-    if (unit == "m")
+ if (unit == "m")
     {
         if (value >= 1000)
         {
