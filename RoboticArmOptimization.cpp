@@ -39,7 +39,12 @@ double numberInputValidation(string message)
     {
         number = stod(input); // Try to convert input to a double
         cin.ignore();
-        return number;
+        if(number < 0)
+        {
+            cout << "Negative number not allowed. \n";
+            return numberInputValidation(message);
+        } // Check if the number is negative
+        else return number;
     }
     catch (exception e) // Catch any conversion error
     {
@@ -359,7 +364,7 @@ public:
     };
 
     // add Motor to the CSV file/Vector
-    Motor addMotor()
+    void addMotor()
     {
         string u;
         double d, w, s, t, m;
@@ -378,7 +383,6 @@ public:
         handler.writeCSV(dataLine);
         motors.push_back(Motor(u, d, w, s, t, m));
         cout << motors.back().diameter << " added to the motors list." << endl;
-        return motors.back();
     }
 };
 
@@ -439,7 +443,7 @@ public:
     }
 
     // add Gearbox to the CSV file/Vector
-    Gearbox addGearbox()
+    void addGearbox()
     {
         string u, r;
         double e, w, m, d;
@@ -456,7 +460,6 @@ public:
         handler.writeCSV(dataLine);
         gearboxes.push_back(Gearbox(u, r, e, w, m, d));
         cout << gearboxes.back().reductionRatio << " added to the gearboxes list." << endl;
-        return gearboxes.back();
     }
 };
 
