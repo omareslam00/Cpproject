@@ -245,7 +245,7 @@ public:
         break;
 
         default:
-            cout << "Enter Valid type\n" << endl;
+            cout << "Enter Valid type" << endl;
             controlStress();
         }
     }
