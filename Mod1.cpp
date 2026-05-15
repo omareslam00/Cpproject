@@ -287,8 +287,8 @@ public:
                     cout << "Optimized radius: " << dimPrecision(r, "m") << endl;
                     cout << "Optimized stress: " << dimPrecision(stress, "Pa") << endl;
                     cout << "link mass: " << dimPrecision(linkMass, "kg") << endl;
-                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc))* 1000; // Calculate required torque in mNm based on the stress analysis results
-                    cout<<"Required Torque is: "<<tRequired<<endl;
+                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc)); // Calculate required torque in Nm based on the stress analysis results
+                    cout<<"Required Torque is: "<<dimPrecision(tRequired, "Nm")<<endl;
                 }
             }
             break;
@@ -313,8 +313,8 @@ public:
                     cout << "Optimized dimensions: width = " << dimPrecision(b, "m") << ", height = " << dimPrecision(h, "m") << endl;
                     cout << "Optimized stress: " << dimPrecision(stress, "Pa") << endl;
                     cout << "Optimized link mass: " << dimPrecision(linkMass, "kg") << endl;
-                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc))* 1000; // Calculate required torque in mNm based on the stress analysis results
-                    cout<<"Required Torque is: "<<tRequired<<endl;
+                    tRequired = (linkMass * g * (linkLength / 2) + (payloadMass * g * linkLength) + (linkMass * pow((linkLength / 2), 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc)); // Calculate required torque in Nm based on the stress analysis results
+                    cout<<"Required Torque is: "<<dimPrecision(tRequired, "Nm")<<endl;
                 }
             }
             break;
@@ -599,7 +599,7 @@ public:
         catch (exception e)       
         {
             cout << "Invalid input. \nPlease enter a valid number: ";
-            filterPairs(criteria);
+            return filterPairs(2);
         }
         while(pairs.back().angVel < stod(angVelRequired)) // Remove pairs that do not meet the required output speed
             {
@@ -714,7 +714,7 @@ int main()
         return 0;
     }
     MotorGearboxPair bestPair = optimization.costFunction(); // Get the best motor-gearbox pair based on the cost function
-    cout << "Best Motor-Gearbox Pair: Motor Index: " << bestPair.motorIndex << ", Motor link: " << optimization.motors[bestPair.motorIndex].url << "\nGearbox Index: " << bestPair.gearboxIndex << ", Gearbox link: " << optimization.gearboxes[bestPair.gearboxIndex].url << "\nOutput Torque: " << bestPair.tOutput << " mNm, Output Speed: " << bestPair.angVel << " rpm" << endl;
+    cout << "Best Motor-Gearbox Pair:\nMotor Index: " << bestPair.motorIndex << ", Motor link: " << optimization.motors[bestPair.motorIndex].url << "\nGearbox Index: " << bestPair.gearboxIndex << ", Gearbox link: " << optimization.gearboxes[bestPair.gearboxIndex].url << "\nOutput Torque: " << dimPrecision(bestPair.tOutput, "Nm") << ", Output Speed: " << bestPair.angVel << "rpm" << endl;
     return 0;
 }
 
