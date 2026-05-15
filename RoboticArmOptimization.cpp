@@ -114,7 +114,7 @@ public:
         }
         file.close();
         return materials;
-    };
+    }
 
     // add Material to the CSV file/Vector
     Material addMaterial()
