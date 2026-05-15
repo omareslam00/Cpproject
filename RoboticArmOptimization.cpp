@@ -37,7 +37,6 @@ double numberInputValidation(string message)
     {
         number = stod(input); // Try to convert input to a double
         cin.ignore();
-        cin.clear();
         return number;
     }
     catch (exception e) // Catch any conversion error
