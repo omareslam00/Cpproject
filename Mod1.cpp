@@ -11,6 +11,42 @@ using namespace std;
 string dimPrecision(double value, string unit); // Function to convert dimensions to appropriate units based on their magnitude for better readability
 
 // Class to handle CSV files operations
+
+string stringInputValidation(string message)
+{
+    string input = "";
+    cout << message;
+    getline(cin,input);
+    if (!input.empty())
+    {
+        return input;
+    }
+    else
+    {
+        cout << "Invalid input. \n";
+        return stringInputValidation(message);
+    }
+}
+double numberInputValidation(string message)
+{
+    string input = "";
+    double number;
+    cout << message;
+    cin >> input;
+    try
+    {
+        number = stod(input); // Try to convert input to a double
+        cin.ignore();
+        cin.clear();
+        return number;
+    }
+    catch (exception e) // Catch any conversion error
+    {
+        cout << "Invalid input. \n";
+        return numberInputValidation(message);
+    }
+}
+
 class csvHandler
 {
 public:
@@ -52,11 +88,11 @@ public:
     double density; // units in g/cm^3
     vector<Material> materials;
 
-    Material(string n = "", string y = "0.0", string d = "0.0")
+    Material(string n = "", double y = 0.0, double d = 0.0)
     {
         name = n;
-        yield = stod(y);
-        density = stod(d);
+        yield = y;
+        density = d;
     }
 
     // Function to read materials from CSV file and return a vector of Material objects
@@ -74,7 +110,7 @@ public:
             getline(ss, n, ',');
             getline(ss, y, ',');
             getline(ss, d, ',');
-            materials.push_back(Material(n, y, d));
+            materials.push_back(Material(n, stod(y), stod(d)));
         }
         file.close();
         return materials;
@@ -83,26 +119,14 @@ public:
     // add Material to the CSV file/Vector
     Material addMaterial()
     {
-        string n, y, d;
-        cout << "Enter material name | yield(MPa) | density(g/cm^3): ";
-        while (true)
-        {
-            try
-            {
-                cin >> n >> y >> d;
-                stod(y);
-                stod(d);
-                cout << "Material added successfully!" << endl;
-                break; // Exit loop if conversion is successful
-            }
-            catch (exception e)
-            {
-                cout << "Invalid input. \nPlease enter valid yield and density values: ";
-            }
-        }
+        string n;
+        double y, d;
+        n = stringInputValidation("Enter material name: ");
+        y = numberInputValidation("Enter yield (MPa): ");
+        d = numberInputValidation("Enter density (g/cm^3): ");
 
         csvHandler handler("./Data/Processed/materials.csv");
-        string dataLine = to_string(materialList().size()) + "," + n + "," + y + "," + d;
+        string dataLine = to_string(materialList().size()) + "," + n + "," + to_string(y) + "," + to_string(d);
         handler.writeCSV(dataLine);
         materials.push_back(Material(n, y, d));
         cout << materials.back().name << " added to the materials list." << endl;
@@ -145,26 +169,15 @@ public:
     }
     Material controlMaterial()
     {
-        string index;
-        cout << "1-Add new material \n2-Select material from the list \nEnter your choice: ";
-        try
-        {
-            cin >> index;
-            stoi(index); // Validate if input is an integer
-        }
-        catch (exception e)
-        {
-            cout << "Invalid input. \nPlease enter a valid number: ";
-            return controlMaterial();
-        }
-        switch (stoi(index))
+        int index = numberInputValidation("1-Add new material \n2-Select material from the list \nEnter your choice: ");
+        switch (index)
         {
         case 1:
             return addMaterial();
         case 2:
             return getMaterial();
         default:
-            cout << "Enter a valid number \n";
+            cout << "Enter a valid number\n";
             return controlMaterial();
         }
     }
@@ -174,7 +187,7 @@ class StressAnalysis
 {
 public:
     const double g = 9.81;   // Acceleration due to gravity (m/s^2)
-    string crossSectionType; // 1-circular or 2-rectangular
+    int crossSectionType; // 1-circular or 2-rectangular
     double linkLength;       // Length of the link (m)
     double payloadMass;      // Mass of the payload (kg)
     double angAcc;           // Angular acceleration (rad/s^2)
@@ -205,32 +218,15 @@ public:
 
     void controlStress()
     {
-        cout << "Enter cross section type (1-circular 2-rectangular): ";
-        try
-        {
-            cin >> crossSectionType;
-            stoi(crossSectionType); // Validate if input is an integer
-        }
-        catch (exception e)
-        {
-            cout << "Invalid input. \nPlease enter a valid number: ";
-            controlStress();
-        }
-        switch (stoi(crossSectionType))
+        crossSectionType = numberInputValidation("Enter cross section type (1-circular, 2-rectangular): ");
+        switch (crossSectionType)
         {
         case 1:
         {
-            cout << "Enter radius(m): ";
-            cin >> r;
-
-            cout << "enter link length(m): ";
-            cin >> linkLength;
-
-            cout << "enter payload mass(kg): ";
-            cin >> payloadMass;
-
-            cout << "enter angular acceleration(rad/s^2): ";
-            cin >> angAcc;
+            r = numberInputValidation("Enter radius(m): ");
+            linkLength = numberInputValidation("Enter link length(m): ");
+            payloadMass = numberInputValidation("Enter payload mass(kg): ");
+            angAcc = numberInputValidation("Enter angular acceleration(rad/s^2): ");
 
             calculateCircular();
         }
@@ -238,27 +234,18 @@ public:
 
         case 2:
         {
-            cout << "Enter width(m): ";
-            cin >> b;
-
-            cout << "Enter height(m): ";
-            cin >> h;
-
-            cout << "enter link length(m): ";
-            cin >> linkLength;
-
-            cout << "enter payload mass(kg): ";
-            cin >> payloadMass;
-
-            cout << "enter angular acceleration(rad/s^2): ";
-            cin >> angAcc;
+            b = numberInputValidation("Enter width(m): ");
+            h = numberInputValidation("Enter height(m): ");
+            linkLength = numberInputValidation("Enter link length(m): ");
+            payloadMass = numberInputValidation("Enter payload mass(kg): ");
+            angAcc = numberInputValidation("Enter angular acceleration(rad/s^2): ");
 
             calculateRectangular();
         }
         break;
 
         default:
-            cout << "Enter Valid type" << endl;
+            cout << "Enter Valid type\n" << endl;
             controlStress();
         }
     }
@@ -267,7 +254,7 @@ public:
     {
         bool optimized = false;
         double yield = material.yield * pow(10, 6); // Convert yield from MPa to Pa for comparison with stress in Pa
-        switch (stoi(crossSectionType))
+        switch (crossSectionType)
         {
         case 1:
             while (!optimized)
@@ -326,22 +313,22 @@ public:
 class Motor
 {
 public:
+    string url;     // URL to the motor product page
     double diameter; // units in mm
     double width;    // units in mm
     double speed;    // units in rpm
     double torque;   // units in mNm
     double weight;   // units in g
-    string url;     // URL to the motor product page
     vector<Motor> motors;
 
-    Motor(string u="https://example.com/" ,string d = "0.0", string w = "0.0", string s = "0.0", string t = "0.0", string m = "0.0")
+    Motor(string u="https://example.com/" ,double d = 0.0, double w = 0.0, double s = 0.0, double t = 0.0, double m = 0.0)
     {
-        diameter = stod(d);
-        width = stod(w);
-        speed = stod(s);
-        torque = stod(t);
-        weight = stod(m);
         url = u;
+        diameter = d;
+        width = w;
+        speed = s;
+        torque = t;
+        weight = m;
     }
 
     // Function to read motors from CSV file and return a vector of Motor objects
@@ -362,7 +349,7 @@ public:
             getline(ss, s, ',');
             getline(ss, t, ',');
             getline(ss, m, ',');
-            motors.push_back(Motor(url, d, w, s, t, m));
+            motors.push_back(Motor(url, stod(d), stod(w), stod(s), stod(t), stod(m)));
         }
         file.close();
         return motors;
@@ -371,31 +358,22 @@ public:
     // add Motor to the CSV file/Vector
     Motor addMotor()
     {
-        string d, w, s, t, m;
-        cout << "Enter motor diameter | width | speed | torque | weight: ";
-        while (true)
-        {
-            try
-            {
-                cin >> d >> w >> s >> t >> m;
-                stod(d);
-                stod(w);
-                stod(s);
-                stod(t);
-                stod(m);
-                cout << "Motor added successfully!" << endl;
-                break; // Exit loop if conversion is successful
-            }
-            catch (exception e)
-            {
-                cout << "Invalid input. \nPlease enter valid diameter, width, speed, torque, and weight values: ";
-            }
-        }
+        string u;
+        double d, w, s, t, m;
+
+        u = stringInputValidation("Enter motor URL: ");
+        d = numberInputValidation("Enter motor diameter (mm): ");
+        w = numberInputValidation("Enter motor width (mm): ");
+        s = numberInputValidation("Enter motor speed (rpm): ");
+        t = numberInputValidation("Enter motor torque (mNm): ");
+        m = numberInputValidation("Enter motor weight (g): ");
+
+        cout << "Motor added successfully!" << endl;
 
         csvHandler handler("./Data/Processed/motors.csv");
-        string dataLine = to_string(motors.size()) + "," + d + "," + w + "," + s + "," + t + "," + m;
+        string dataLine = to_string(motors.size()) + "," + u + "," + to_string(d) + "," + to_string(w) + "," + to_string(s) + "," + to_string(t) + "," + to_string(m);
         handler.writeCSV(dataLine);
-        motors.push_back(Motor(d, w, s, t, m));
+        motors.push_back(Motor(u, d, w, s, t, m));
         cout << motors.back().diameter << " added to the motors list." << endl;
         return motors.back();
     }
@@ -413,8 +391,9 @@ public:
     double diameter;   // units in mm
     vector<Gearbox> gearboxes;
 
-    Gearbox(string u="https://example.com/", string r = "0.0", string e = "0.0", string w = "0.0", string m = "0.0", string d = "0.0")
+    Gearbox(string u="https://example.com/", string r = "0.0", double e = 0.0, double w = 0.0, double m = 0.0, double d = 0.0)
     {
+        url = u;
         // handle \ in reduction ratio if it exists (example: 1/100)
         if (r.find('/'))
         {
@@ -426,11 +405,10 @@ public:
         {
             reductionRatio = 0; // default value if reduction ratio is not provided or invalid
         }
-        efficiency = stod(e);
-        width = stod(w);
-        weight = stod(m);
-        diameter = stod(d);
-        url = u;
+        efficiency = e;
+        width = w;
+        weight = m;
+        diameter = d;
     }
 
     // Function to read gearboxes from CSV file and return a vector of Gearbox objects
@@ -451,7 +429,7 @@ public:
             getline(ss, w, ',');
             getline(ss, m, ',');
             getline(ss, d, ',');
-            gearboxes.push_back(Gearbox(url, r, e, w, m, d));
+            gearboxes.push_back(Gearbox(url, r, stod(e), stod(w), stod(m), stod(d)));
         }
         file.close();
         return gearboxes;
@@ -460,31 +438,20 @@ public:
     // add Gearbox to the CSV file/Vector
     Gearbox addGearbox()
     {
-        string r, e, w, m, d;
-        cout << "Enter gearbox reduction ratio | efficiency | width | weight | diameter: ";
-        while (true)
-        {
-            try
-            {
-                cin >> r >> e >> w >> m >> d;
-                stod(r);
-                stod(e);
-                stod(w);
-                stod(m);
-                stod(d);
-                cout << "Gearbox added successfully!" << endl;
-                break; // Exit loop if conversion is successful
-            }
-            catch (exception e)
-            {
-                cout << "Invalid input. \nPlease enter valid reduction ratio, efficiency, width, weight, and diameter values: ";
-            }
-        }
+        string u, r;
+        double e, w, m, d;
+
+        u = stringInputValidation("Enter gearbox URL: ");
+        r = stringInputValidation("Enter gearbox reduction ratio (example: 1/100): ");
+        e = numberInputValidation("Enter gearbox efficiency (%): ");
+        w = numberInputValidation("Enter gearbox width (mm): ");
+        m = numberInputValidation("Enter gearbox weight (g): ");
+        d = numberInputValidation("Enter gearbox diameter (mm): ");
 
         csvHandler handler("./Data/Processed/gearboxes.csv");
-        string dataLine = to_string(gearboxes.size()) + "," + r + "," + e + "," + w + "," + m + "," + d;
+        string dataLine = to_string(gearboxes.size()) + "," + u + "," + r + "," + to_string(e) + "," + to_string(w) + "," + to_string(m) + "," + to_string(d);
         handler.writeCSV(dataLine);
-        gearboxes.push_back(Gearbox(r, e, w, m, d));
+        gearboxes.push_back(Gearbox(u, r, e, w, m, d));
         cout << gearboxes.back().reductionRatio << " added to the gearboxes list." << endl;
         return gearboxes.back();
     }
@@ -589,19 +556,8 @@ public:
         }
         case 2: // Filter by output speed
         {
-        cout << "Enter required output speed (rpm): ";
-        string angVelRequired; // rpm
-        try
-        {      
-            cin >> angVelRequired;
-            stod(angVelRequired); // Validate if input is a number
-        }
-        catch (exception e)       
-        {
-            cout << "Invalid input. \nPlease enter a valid number: ";
-            return filterPairs(2);
-        }
-        while(pairs.back().angVel < stod(angVelRequired)) // Remove pairs that do not meet the required output speed
+        double angVelRequired = numberInputValidation("Enter required output speed (rpm): ");
+        while(pairs.back().angVel < angVelRequired) // Remove pairs that do not meet the required output speed
             {
                 pairs.pop_back();
                 if(pairs.empty())
