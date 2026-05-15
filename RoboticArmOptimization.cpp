@@ -201,18 +201,18 @@ public:
 
     void calculateCircular()
     {
-        linkMass = density * M_PI * pow(r, 2) * linkLength;                                                                                                                             // Mass of the link (kg)
+        linkMass = density * M_PI * pow(r, 2) * linkLength;     // Mass of the link (kg)
         double bendingMoment = linkMass * g * (linkLength / 2) + payloadMass * g * linkLength + linkMass * pow(linkLength / 2, 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc; // Momentum of the link (N.m)
-        double I = M_PI * pow(r, 4) / 4;                                                                                                                                                // Moment of inertia for circular cross section (m^4)
-        stress = (bendingMoment * r / I);                                                                                                                                        // Maximum stress formula
+        double I = M_PI * pow(r, 4) / 4;    // Moment of inertia for circular cross section (m^4)
+        stress = (bendingMoment * r / I);   // Maximum stress formula
     }
 
     void calculateRectangular()
     {
-        linkMass = density * b * h * linkLength;                                                                                                                                        // Mass of the link (kg)
+        linkMass = density * b * h * linkLength;    // Mass of the link (kg)
         double bendingMoment = linkMass * g * (linkLength / 2) + payloadMass * g * linkLength + linkMass * pow(linkLength / 2, 2) * angAcc + payloadMass * pow(linkLength, 2) * angAcc; // Momentum of the link (N.m)
-        double I = (b * pow(h, 3)) / 12;                                                                                                                                                // Moment of inertia for rectangular cross section (m^4)
-        stress = (bendingMoment * h / (2 * I));                                                                                                                                  // Maximum stress formula
+        double I = (b * pow(h, 3)) / 12;    // Moment of inertia for rectangular cross section (m^4)
+        stress = (bendingMoment * h / (2 * I)); // Maximum stress formula
     }
 
     void controlStress()
@@ -432,7 +432,7 @@ public:
         }
         file.close();
         return gearboxes;
-    };
+    }
 
     // add Gearbox to the CSV file/Vector
     Gearbox addGearbox()
