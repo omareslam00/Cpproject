@@ -1,7 +1,7 @@
 <!-- HEADER -->
 <div align="center">
 
-# ⚙️ Robotic Arm Link Design & Motor-Gearbox Selection System
+# Robotic Arm Link Design & Motor-Gearbox Selection System
 
 **C++ engineering toolkit for robotic joint structural analysis and optimal actuator selection**
 
@@ -17,7 +17,7 @@
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
 - [Overview](#-overview)
 - [Features](#-features)
@@ -33,73 +33,32 @@
 
 ---
 
-## 📖 Overview
+## Overview
 
 This project solves two interconnected problems in robotic arm design:
 
-1. **Structural sizing** — Given a link's material, geometry, payload, and motion profile, compute the bending stress and iteratively optimize the cross-section dimensions until stress exactly meets (but never exceeds) the material's yield strength.
+1. **Structural sizing**: Given a link's material, geometry, payload, and motion profile, compute the bending stress and iteratively optimize the cross-section dimensions until stress exactly meets (but never exceeds) the material's yield strength.
 
-2. **Actuator selection** — Using a pre-built database of 501 real Maxon motors and 501 real Maxon gearboxes, enumerate all ~251,000 motor-gearbox combinations, compute each pair's output torque and speed, and surface candidates that satisfy the joint's required torque.
+2. **Actuator selection**: Using a pre-built database of 501 real Maxon motors and 501 real Maxon gearboxes, enumerate all ~251,000 motor-gearbox combinations, compute each pair's output torque and speed, and surface candidates that satisfy the joint's required torque.
 
 The component databases are populated automatically by a Python scraping pipeline that crawls Maxon Group's online catalog with Selenium and BeautifulSoup.
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Material database** with interactive CLI: select from existing entries or add custom materials (name, yield strength, density)
 - **Bending stress engine** for both circular and rectangular beam cross-sections
 - **Iterative cross-section optimizer**: scales dimensions ±1% per iteration until stress converges within 1% of yield strength
 - **Full combinatorial pairing**: O(N×M) enumeration of all motor-gearbox combinations, persisted to CSV
 - **Required torque calculator** combining gravitational and inertial loading
-- **Smart unit formatting** (`dimPrecision`) auto-selects SI prefix for clean output (mm → m → km, Pa → kPa → MPa, g → kg → tons)
+- **Smart unit formatting** (`dimPrecision`) Displays output values in scientific notation
 - **Python scraper** with retry logic, random delay jitter, and fault-tolerant row parsing
 - **Extensible CSV architecture**: all databases can be extended at runtime without recompilation
 
 ---
 
-## ⚙️ System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Python Data Pipeline                       │
-│                                                             │
-│  Selenium Browser  →  BeautifulSoup Parser  →  JSON Cache   │
-│        ↓                                                     │
-│  CleanData()  →  motorsDetailsCleaned.csv                   │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-              ┌─────────────▼──────────────┐
-              │     Data/Processed/         │
-              │  ┌──────────────────────┐  │
-              │  │    motors.csv        │  │
-              │  │    gears.csv         │  │
-              │  │    materials.csv     │  │
-              │  └──────────────────────┘  │
-              └─────────────┬──────────────┘
-                            │
-┌───────────────────────────▼─────────────────────────────────┐
-│                    C++ Core Engine                           │
-│                                                             │
-│  ┌──────────┐  ┌───────────────┐  ┌────────────────────┐   │
-│  │ Material │  │ StressAnalysis│  │  MotorGearboxPair   │   │
-│  │  DB ops  │  │  + Optimizer  │  │   Combinatorics    │   │
-│  └────┬─────┘  └──────┬────────┘  └────────┬───────────┘   │
-│       │               │                    │               │
-│       └───────────────▼────────────────────▼               │
-│                MotorGearboxOptimization                     │
-│          (Required Torque + Candidate Filter)               │
-└───────────────────────────┬─────────────────────────────────┘
-                            │
-              ┌─────────────▼──────────────┐
-              │  motor_gearbox_pairs.csv    │
-              │    (~251,000 rows)          │
-              └────────────────────────────┘
-```
-
----
-
-## 🧠 Engineering Logic
+## Engineering Logic
 
 <details>
 <summary><b>Bending Moment Model</b></summary>
@@ -184,7 +143,7 @@ T_output = T_motor × reduction_ratio × (η / 100)
 
 ---
 
-## 🐍 Data Pipeline
+## Data Pipeline
 
 ```
 GetProductsUrls()        — paginate catalog, collect URLs + diameter + width
@@ -209,12 +168,13 @@ motorsDetailsCleanedIndexed.csv  →  motors.csv / gears.csv
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 project/
- ├── Mod1.cpp                            # C++ core — all classes and main()
- ├── Scraper.py                          # Python scraping + data cleaning
+ ├── RoboticArmOptimization.cpp          # C++ core — all classes and main()
+ ├── GearBoxes_Scraper.py                # Python scraping + data cleaning for gearboxes
+ |── Motors_Scraper.py                   # Python scraping + data cleaning for motors
  └── Data/
      └── Processed/
          ├── motors.csv                  # 501 Maxon motors
@@ -225,7 +185,7 @@ project/
 
 ---
 
-## 🛠️ Installation & Build
+## Installation & Build
 
 ### C++ Engine
 
@@ -233,10 +193,10 @@ project/
 
 ```bash
 # Clone / download project, then:
-g++ -std=c++11 Mod1.cpp -o arm_design
+g++ -std=c++11 RoboticArmOptimization.cpp -o arm_design
 
 # Windows (MSVC)
-cl /EHsc /std:c++11 Mod1.cpp /Fe:arm_design.exe
+cl /EHsc /std:c++11 RoboticArmOptimization.cpp /Fe:arm_design.exe
 ```
 
 ```bash
@@ -255,7 +215,7 @@ arm_design.exe        # Windows
 pip install selenium beautifulsoup4 lxml pandas
 ```
 
-Update `driver_path` in `Scraper.py` to your ChromeDriver location, then:
+Update `driver_path` in both `GearBoxes_Scraper.py` and `Motors_Scraper.py` to your ChromeDriver location, then:
 
 ```python
 # Run in sequence inside Scraper.py
@@ -268,60 +228,22 @@ AddIndexColumn()
 
 ---
 
-## ▶️ Usage
-
-```
-1-Add new material
-2-Select material from the list
-Enter your choice: 2
-
-Index | Name              | Yield(MPa) | Density(g/cm^3)
-0     | Cast iron         | 130        | 7.3
-1     | Copper nickel     | 130        | 8.94
-2     | Aluminium alloy   | 270        | 2.7
-...
-Enter index of the required material: 2
-
-Enter cross section type (1-circular  2-rectangular): 1
-Enter radius(m): 0.02
-Enter link length(m): 0.4
-Enter payload mass(kg): 1.5
-Enter angular acceleration(rad/s^2): 2.5
-
-Optimized radius: 9.87 mm
-Optimized stress: 269.73 MPa
-Link mass: 334.12 g
-```
-
----
-
-## 🧩 Code Component Reference
+## Code Component Reference
 
 | Component | File | Responsibility |
 |-----------|------|---------------|
-| `csvHandler` | Mod1.cpp | Low-level CSV read (fstream) and append operations |
-| `Material` | Mod1.cpp | Material DB: parse CSV, interactive add/select, input validation |
-| `StressAnalysis` | Mod1.cpp | Bending stress for circular + rectangular; iterative optimizer; inherits Material |
-| `Motor` | Mod1.cpp | Motor DB: parse CSV, interactive add |
-| `Gearbox` | Mod1.cpp | Gearbox DB: parse CSV with fractional ratio parsing (e.g. `57/13`) |
-| `MotorGearboxPair` | Mod1.cpp | Enumerate N×M combinations; read/write pairs CSV |
-| `MotorGearboxOptimization` | Mod1.cpp | Required torque calculation; inherits StressAnalysis |
-| `dimPrecision()` | Mod1.cpp | Auto-scaling unit formatter for length, pressure, mass |
+| `csvHandler` | RoboticArmOptimization.cpp | Low-level CSV read (fstream) and append operations |
+| `Material` | RoboticArmOptimization.cpp | Material DB: parse CSV, interactive add/select, input validation |
+| `StressAnalysis` | RoboticArmOptimization.cpp | Bending stress for circular + rectangular; iterative optimizer; inherits Material |
+| `Motor` | RoboticArmOptimization.cpp | Motor DB: parse CSV, interactive add |
+| `Gearbox` | RoboticArmOptimization.cpp | Gearbox DB: parse CSV with fractional ratio parsing (e.g. `57/13`) |
+| `MotorGearboxPair` | RoboticArmOptimization.cpp | Enumerate N×M combinations; read/write pairs CSV |
+| `MotorGearboxOptimization` | RoboticArmOptimization.cpp | Required torque calculation; inherits StressAnalysis |
+| `dimPrecision()` | RoboticArmOptimization.cpp | Auto-scaling unit formatter for length, pressure, mass |
 
 ---
 
-## 📊 Algorithm Details
-
-| Step | Complexity | Notes |
-|------|-----------|-------|
-| Load motors/gearboxes | O(N) | Single CSV pass |
-| Cross-section optimization | O(log(1/ε) / log(1.01)) | Geometric convergence; typically < 500 iterations |
-| Motor-gearbox enumeration | O(N × M) | 501 × 501 = ~251,000 multiplications |
-| Pair filtering by required torque | O(P) | Linear scan over pairs CSV |
-
----
-
-## ⚠️ Limitations
+## Limitations
 
 - Stress model is a cantilever beam approximation; torsion and axial loads are not considered.
 - Gearbox efficiency is taken as constant (catalog peak value); true efficiency varies with speed and load.
