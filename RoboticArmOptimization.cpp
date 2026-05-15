@@ -10,8 +10,7 @@ using namespace std;
 
 string dimPrecision(double value, string unit); // Function to convert dimensions to appropriate units based on their magnitude for better readability
 
-// Class to handle CSV files operations
-
+// Function to validate string input and ensure it is not empty
 string stringInputValidation(string message)
 {
     string input = "";
@@ -27,6 +26,9 @@ string stringInputValidation(string message)
         return stringInputValidation(message);
     }
 }
+
+// Function to validate numeric input and ensure it can be converted to a number
+
 double numberInputValidation(string message)
 {
     string input = "";
@@ -45,6 +47,8 @@ double numberInputValidation(string message)
         return numberInputValidation(message);
     }
 }
+
+// Class to handle CSV files operations
 
 class csvHandler
 {
